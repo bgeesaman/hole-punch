@@ -1,0 +1,82 @@
+// Object catalog: physics shape, size, tier, points. Pure data, no three.js, so the
+// generator and its tests can use it. Visuals live in render/fruit.js keyed by the same names.
+//
+// Tier radii: S 0.25, M 0.5, L 1.0. Points: S 1, M 5, L 20. Crates are the stacking unit.
+export const TIER = {
+  S: { r: 0.25, points: 1 },
+  M: { r: 0.5, points: 5 },
+  L: { r: 1.0, points: 20 },
+};
+
+export const CATALOG = {
+  blueberry:  { kind: 'fruit', tier: 'S', shape: 'ball', size: { r: 0.25 }, restY: 0.25 },
+  grape:      { kind: 'fruit', tier: 'S', shape: 'ball', size: { r: 0.25 }, restY: 0.25 },
+  apple:      { kind: 'fruit', tier: 'M', shape: 'ball', size: { r: 0.5 }, restY: 0.5 },
+  orange:     { kind: 'fruit', tier: 'M', shape: 'ball', size: { r: 0.5 }, restY: 0.5 },
+  // Banana: capsule lying on its side (axis along local Y, body rotated 90° about Z).
+  banana:     { kind: 'fruit', tier: 'M', shape: 'capsule', size: { hh: 0.45, r: 0.2 }, restY: 0.2,
+                rotation: { x: 0, y: 0, z: Math.SQRT1_2, w: Math.SQRT1_2 }, friction: 0.7 },
+  watermelon: { kind: 'fruit', tier: 'L', shape: 'ball', size: { r: 1.0 }, restY: 1.0 },
+  pineapple:  { kind: 'fruit', tier: 'L', shape: 'cylinder', size: { hh: 0.75, r: 0.6 }, restY: 0.75, friction: 0.7 },
+  crateS:     { kind: 'fruit', tier: 'S', shape: 'cuboid', size: { hx: 0.25, hy: 0.25, hz: 0.25 }, restY: 0.25, friction: 0.7, restitution: 0.05 },
+  crateM:     { kind: 'fruit', tier: 'M', shape: 'cuboid', size: { hx: 0.5, hy: 0.5, hz: 0.5 }, restY: 0.5, friction: 0.7, restitution: 0.05 },
+  crateL:     { kind: 'fruit', tier: 'L', shape: 'cuboid', size: { hx: 1.0, hy: 1.0, hz: 1.0 }, restY: 1.0, friction: 0.7, restitution: 0.05 },
+  bomb:       { kind: 'bomb', tier: 'M', shape: 'ball', size: { r: 0.5 }, restY: 0.5 },
+};
+
+export const FRUIT_BY_TIER = {
+  S: ['blueberry', 'grape'],
+  M: ['apple', 'orange', 'banana'],
+  L: ['watermelon', 'pineapple'],
+};
+export const CRATE_BY_TIER = { S: 'crateS', M: 'crateM', L: 'crateL' };
+
+export function pointsFor(type) {
+  const c = CATALOG[type];
+  return c.kind === 'bomb' ? 0 : TIER[c.tier].points;
+}
+
+// Footprint half-extent in XZ when resting.
+export function footprintFor(type) {
+  const c = CATALOG[type];
+  switch (c.shape) {
+    case 'ball': return c.size.r;
+    case 'cuboid': return Math.max(c.size.hx, c.size.hz);
+    case 'cylinder': return c.size.r;
+    case 'capsule': return c.size.hh + c.size.r; // lying down
+    default: return 1;
+  }
+}
+
+// Spawn descriptor for the physics world from a placed object.
+export function spawnDescriptor(obj) {
+  const c = CATALOG[obj.type];
+  return {
+    shape: c.shape,
+    size: c.size,
+    position: obj.position,
+    rotation: obj.rotation || c.rotation,
+    kind: c.kind,
+    tier: c.tier,
+    points: pointsFor(obj.type),
+    type: obj.type,
+    friction: c.friction,
+    restitution: c.restitution,
+    clearance: clearanceRadius(obj.type),
+  };
+}
+
+// Radius of hole an object needs to pass through comfortably: balls and cylinders their
+// radius (they self-centre by rolling), crates the half-diagonal of a face plus a margin (a
+// crate must be centred within radius - half-diagonal or a corner catches the rim, and a
+// tipped crate presents more than a face), bananas their width.
+export function clearanceRadius(type) {
+  const c = CATALOG[type];
+  switch (c.shape) {
+    case 'ball': return c.size.r;
+    case 'cuboid': return Math.max(c.size.hx, c.size.hz) * Math.SQRT2 * 1.25;
+    case 'cylinder': return c.size.r * 1.25; // tips over and wedges without margin
+    case 'capsule': return c.size.r;
+    default: return 1;
+  }
+}
