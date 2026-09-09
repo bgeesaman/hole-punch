@@ -64,7 +64,8 @@ html, body {
 }
 .pips i.on { background: var(--accent); }
 /* Master mute indicator at the right of the HUD bar. */
-.hud-muted { margin-left: auto; font-size: 18px; }
+.hud-muted { margin-left: auto; font-size: 18px; padding: 0 4px; opacity: 0.85; }
+.hud-muted:hover { opacity: 1; }
 .hud-muted[hidden] { display: none; }
 
 /* Sound settings (pause menu): two segmented rows. */

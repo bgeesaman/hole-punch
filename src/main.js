@@ -63,6 +63,7 @@ function setMuted(m) {
   mutedEl.hidden = !m;
 }
 mutedEl.hidden = !save.data.audio.muted;
+mutedEl.addEventListener('click', (e) => { e.stopPropagation(); setMuted(false); });
 
 const debugEl = document.getElementById('debug');
 const debug = params.has('debug');
