@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "python3 -m http.server 5173",
+    "dev": "serve -l 5173 .",
     "test": "vitest run"
   },
   "dependencies": {
@@ -12,6 +12,7 @@
     "three": "^0.186.0"
   },
   "devDependencies": {
+    "serve": "^14.2.6",
     "vitest": "^5.0.0"
   }
 }

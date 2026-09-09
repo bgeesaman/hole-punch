@@ -7,6 +7,7 @@ import { createHud } from './ui/hud.js';
 import { createEndScreen } from './ui/end.js';
 import { createMenu } from './ui/menu.js';
 import { createPause } from './ui/pause.js';
+import { createHowto } from './ui/howto.js';
 import { createSave } from './game/save.js';
 import { createAudio } from './audio.js';
 import { createParticles } from './render/particles.js';
@@ -50,6 +51,7 @@ const pause = createPause({
   onRestart: () => startLevel(level),
   onMenu: () => showMenu({ fromPause: true }),
 });
+const howto = createHowto({ onPlay: () => input.capture() });
 const hudEl = document.getElementById('hud');
 
 // Sound settings live in the pause menu, persisted per channel.
@@ -138,6 +140,7 @@ let menuFromPause = false;
 function showMenu({ fromPause = false } = {}) {
   screen = 'menu';
   menuFromPause = fromPause;
+  howto.hide();
   audio.duck(true);
   setIntro(null);
   input.release();
@@ -195,6 +198,8 @@ function startLevel(n = level) {
   intro = INTRO_TIME;
   setIntro(null);
   refreshHud();
+  // First level with no progress: explain the game before Ready / Go.
+  if (level === 1 && !save.result(1)) howto.show(); else howto.hide();
 }
 
 function refreshHud() {
@@ -240,7 +245,7 @@ let fpsAcc = 0, fpsN = 0, fps = 0, physMs = 0;
 
 function update(dt) {
   const s = session.state;
-  const captured = input.state.locked || nolock;
+  const captured = (input.state.locked || nolock) && !howto.open;
   if (input.state.relative !== view.state.follow) { input.setMode({ relative: view.state.follow }); seedCursorAtHole(); }
   input.setMode({ unitsPerPixel: view.unitsPerPixel() });
   if (intro > 0 && captured && !s.ended) {
