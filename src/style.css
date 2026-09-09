@@ -47,6 +47,7 @@ html, body {
   border: 1px solid var(--paper-line);
   border-radius: 6px;
   padding: 8px 16px;
+  min-height: 26px; /* fixed: the mute button must not change the bar height */
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18), 0 8px 18px rgba(0, 0, 0, 0.18);
   flex: 1;
 }
@@ -64,7 +65,7 @@ html, body {
 }
 .pips i.on { background: var(--accent); }
 /* Master mute indicator at the right of the HUD bar. */
-.hud-muted { margin-left: auto; font-size: 18px; padding: 0 4px; opacity: 0.85; }
+.hud-muted { margin-left: auto; font-size: 18px; line-height: 1; height: 24px; padding: 0 4px; opacity: 0.85; }
 .hud-muted:hover { opacity: 1; }
 .hud-muted[hidden] { display: none; }
 
