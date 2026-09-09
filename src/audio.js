@@ -5,7 +5,9 @@ import { createMusic } from './music.js';
 // (music.js) starts with the context and runs under the same master gain, so mute covers it.
 export const AUDIO_LEVELS = { off: 0, low: 0.35, normal: 1 };
 
-export function createAudio({ music: musicLevel = 'low', sfx: sfxLevel = 'normal' } = {}) {
+export function createAudio({ music: musicLevel = 'low', sfx: sfxLevel = 'normal', muted = false } = {}) {
+  let isMuted = muted; // master mute (M key): silences everything, channel levels are kept
+  const MASTER_GAIN = 0.5;
   let ctx = null;
   let master = null;
   let sfxBus = null;
@@ -21,7 +23,7 @@ export function createAudio({ music: musicLevel = 'low', sfx: sfxLevel = 'normal
     if (!AC) return false;
     ctx = new AC();
     master = ctx.createGain();
-    master.gain.value = 0.5;
+    master.gain.value = isMuted ? 0 : MASTER_GAIN;
     master.connect(ctx.destination);
     sfxBus = ctx.createGain();
     sfxBus.gain.value = factor(sfxLevel);
@@ -41,6 +43,10 @@ export function createAudio({ music: musicLevel = 'low', sfx: sfxLevel = 'normal
     if (music) music.setVolume(MUSIC_GAIN * factor(musicLevel) * (ducked ? 0.4 : 1));
   }
   function setMusicLevel(level) { musicLevel = level; applyMusicVolume(); }
+  function setMuted(m) {
+    isMuted = m;
+    if (master) master.gain.setTargetAtTime(m ? 0 : MASTER_GAIN, ctx.currentTime, 0.02);
+  }
   function setSfxLevel(level) {
     sfxLevel = level;
     if (sfxBus) sfxBus.gain.setTargetAtTime(factor(level), ctx.currentTime, 0.02);
@@ -85,6 +91,8 @@ export function createAudio({ music: musicLevel = 'low', sfx: sfxLevel = 'normal
   const api = {
     setMusicLevel,
     setSfxLevel,
+    setMuted,
+    get muted() { return isMuted; },
     get levels() { return { music: musicLevel, sfx: sfxLevel }; },
     // Music follows the level: a little faster and busier as levels climb.
     setLevel(level) { pendingLevel = level; if (music) music.setLevel(level); },

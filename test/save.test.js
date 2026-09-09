@@ -48,11 +48,11 @@ it('keeps per-channel audio levels and migrates the old muted flag', () => {
   const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) };
   storage.setItem(SAVE_KEY, JSON.stringify({ unlocked: 3, levels: {}, muted: true }));
   const s1 = createSave(storage);
-  expect(s1.data.audio).toEqual({ music: 'off', sfx: 'off' });
+  expect(s1.data.audio).toEqual({ music: 'off', sfx: 'off', muted: false });
   expect(s1.data.muted).toBeUndefined();
   s1.setAudio('music', 'low');
   const s2 = createSave(storage);
-  expect(s2.data.audio).toEqual({ music: 'low', sfx: 'off' });
+  expect(s2.data.audio).toEqual({ music: 'low', sfx: 'off', muted: false });
 });
 
 it('reads a save written under the old game name', () => {

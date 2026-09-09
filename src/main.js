@@ -54,8 +54,15 @@ const pause = createPause({
 const howto = createHowto({ onPlay: () => input.capture() });
 const hudEl = document.getElementById('hud');
 
-// Sound settings live in the pause menu, persisted per channel.
+// Sound settings live in the pause menu, persisted per channel. M toggles a master mute on top.
 pause.setAudio(save.data.audio);
+const mutedEl = document.getElementById('hud-muted');
+function setMuted(m) {
+  save.setAudio('muted', m);
+  audio.setMuted(m);
+  mutedEl.hidden = !m;
+}
+mutedEl.hidden = !save.data.audio.muted;
 
 const debugEl = document.getElementById('debug');
 const debug = params.has('debug');
@@ -222,9 +229,10 @@ function endLevel() {
 // ?level=N jumps straight in (testing); otherwise start at the menu.
 if (params.has('level')) startLevel(level); else { startLevel(level); showMenu(); }
 
-// Escape on the level menu returns to the pause menu it came from.
+// Escape on the level menu returns to the pause menu it came from. M toggles the master mute.
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && screen === 'menu' && menuFromPause && session && !session.state.ended) backToPause();
+  if (e.key === 'm' || e.key === 'M') setMuted(!audio.muted);
 });
 
 // Debug keys: [ and ] fake a milestone / bomb. R restarts the level.

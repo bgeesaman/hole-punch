@@ -15,6 +15,7 @@ export function createPause({ onResume, onMenu, onRestart, onAudio }) {
       <div class="settings">
         <div class="audio-row"><span class="label">MUSIC</span>${seg('music')}</div>
         <div class="audio-row"><span class="label">SFX</span>${seg('sfx')}</div>
+        <div class="keyhint"><b>M</b> mutes and unmutes everything</div>
       </div>
       <div class="buttons">
         <button id="pause-resume">Resume</button>

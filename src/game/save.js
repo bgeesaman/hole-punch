@@ -1,12 +1,13 @@
 // Progress persistence. localStorage JSON blob:
-// { unlocked: n, levels: { [n]: { best, stars } }, audio: { music, sfx } } with levels 'off' | 'low' | 'normal'.
+// { unlocked: n, levels: { [n]: { best, stars, perfect? } }, audio: { music, sfx, muted } }
+// with levels 'off' | 'low' | 'normal' and muted the master mute toggle (M key).
 // Older saves carried `muted: bool`; it maps to both channels off.
 // A storage object can be injected for tests.
 export const SAVE_KEY = 'holepunch.save.v1';
 const OLD_SAVE_KEY = 'fruitdrop.save.v1'; // the game's earlier name; read once and carried over
 
 function defaultSave() {
-  return { unlocked: 1, levels: {}, audio: { music: 'low', sfx: 'normal' } };
+  return { unlocked: 1, levels: {}, audio: { music: 'low', sfx: 'normal', muted: false } };
 }
 
 export function createSave(storage = globalThis.localStorage) {
@@ -19,7 +20,7 @@ export function createSave(storage = globalThis.localStorage) {
         const parsed = JSON.parse(raw);
         data = { ...defaultSave(), ...parsed, levels: parsed.levels || {} };
         data.audio = { ...defaultSave().audio, ...(parsed.audio || {}) };
-        if (parsed.muted && !parsed.audio) data.audio = { music: 'off', sfx: 'off' };
+        if (parsed.muted && !parsed.audio) data.audio = { ...data.audio, music: 'off', sfx: 'off' };
         delete data.muted;
       }
     } catch { data = defaultSave(); }

@@ -63,9 +63,14 @@ html, body {
   border: 2px solid var(--accent); display: inline-block;
 }
 .pips i.on { background: var(--accent); }
+/* Master mute indicator at the right of the HUD bar. */
+.hud-muted { margin-left: auto; font-size: 18px; }
+.hud-muted[hidden] { display: none; }
+
 /* Sound settings (pause menu): two segmented rows. */
 .settings { display: flex; flex-direction: column; gap: 8px; margin: 0 auto 18px; max-width: 250px; }
 .settings .label { font-size: 11px; letter-spacing: 0.15em; color: var(--ink-soft); }
+.settings .keyhint { font-size: 11px; color: var(--ink-soft); text-align: center; }
 .audio-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .audio-row .label { margin: 0; }
 .seg { display: inline-flex; border: 1px solid var(--paper-line); border-radius: 5px; overflow: hidden; }
