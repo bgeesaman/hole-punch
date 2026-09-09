@@ -2,7 +2,7 @@
 
 **[Play it now](https://bgeesaman.github.io/hole-punch/)**
 
-![Level 30: the hole eating a grid of apples next to a bomb, with crate stacks and a watermelon behind](docs/screenshot.jpg)
+[![Level 30: the hole eating a grid of apples next to a bomb, with crate stacks and a watermelon behind](docs/screenshot.jpg)](https://bgeesaman.github.io/hole-punch/)
 
 A browser game built with three.js and Rapier. You steer a hole across a paper craft board and
 eat fruit, crates, and bombs that fall in with real physics. 100 levels, each with a countdown,
