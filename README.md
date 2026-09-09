@@ -1,14 +1,16 @@
 # Hole Punch
 
+**[Play it now](https://bgeesaman.github.io/hole-punch/)**
+
 A browser game built with three.js and Rapier. You steer a hole across a paper craft board and
 eat fruit, crates, and bombs that fall in with real physics. 100 levels, each with a countdown,
 a target score, and a hole that grows as you hit score milestones.
 
 ## Run
 
-There is no build step. The page is plain ES modules; `three` and Rapier load from jsDelivr
-through the import map in `index.html`. Any static file server works, since modules do not
-load from `file://`:
+There is no build step and no CDN. The page is plain ES modules; `three` and Rapier are
+vendored under `vendor/` and resolved through the import map in `index.html`. Any static file
+server works, since modules do not load from `file://`:
 
 ```sh
 npm run dev        # python3 -m http.server 5173, then open http://localhost:5173
@@ -27,8 +29,8 @@ Settings, Pages, source "Deploy from a branch", branch `main`, folder `/ (root)`
 to `main` is live at `https://<user>.github.io/<repo>/`. Paths in `index.html` are relative,
 so a project sub-path works without configuration.
 
-Dependency versions are pinned twice: in `package.json` for the tests, and in the import map
-for the browser. Bump both together.
+Dependency versions live in two places: `package.json` for the tests and the copies under
+`vendor/` for the browser. Bump both together; `vendor/README.md` lists what to copy.
 
 ## Play
 

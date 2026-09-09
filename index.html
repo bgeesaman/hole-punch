@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hole Punch</title>
     <link rel="stylesheet" href="./src/style.css" />
-    <!-- No bundler: bare module names resolve through this map. Keep versions in step with package.json. -->
+    <!-- No bundler: bare module names resolve to the vendored copies (see vendor/README.md). -->
     <script type="importmap">
       {
         "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/",
-          "@dimforge/rapier3d-compat": "https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.20.0/dist/rapier.mjs"
+          "three": "./vendor/three/three.module.js",
+          "three/addons/": "./vendor/three/addons/",
+          "@dimforge/rapier3d-compat": "./vendor/rapier/rapier.mjs"
         }
       }
     </script>
