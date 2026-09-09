@@ -1,7 +1,7 @@
 import { LEVELS } from '../game/level-curve.js';
 
 // Menu: title, 10x10 level grid, reset progress. Locked levels are disabled; completed levels
-// show stars and best score.
+// show stars and best score; a level ever cleared with nothing lost gets a gold border.
 export function createMenu({ save, onSelect }) {
   const el = document.createElement('div');
   el.id = 'menu';
@@ -56,11 +56,11 @@ export function createMenu({ save, onSelect }) {
       const r = save.result(n);
       const unlocked = save.isUnlocked(n);
       b.disabled = !unlocked;
-      b.className = 'level' + (r && r.stars > 0 ? ' done' : '') + (unlocked && !r ? ' fresh' : '');
+      b.className = 'level' + (r && r.stars > 0 ? ' done' : '') + (unlocked && !r ? ' fresh' : '') + (r && r.perfect ? ' perfect' : '');
       if (r && r.stars > 0) done++;
       b.innerHTML = `<span class="n">${n}</span>` +
         (r ? `<span class="s">${'★'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}</span><span class="b">${r.best}</span>` : '<span class="s"></span><span class="b"></span>');
-      b.title = unlocked ? (r ? `Best ${r.best}` : 'Play') : 'Locked';
+      b.title = unlocked ? (r ? `Best ${r.best}${r.perfect ? ' · perfect run' : ''}` : 'Play') : 'Locked';
       frag.appendChild(b);
     }
     grid.replaceChildren(frag);

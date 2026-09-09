@@ -31,9 +31,10 @@ export function createSave(storage = globalThis.localStorage) {
   }
 
   // Record a finished level. Unlocks the next one on a win. Returns { newBest, newStars }.
-  function recordResult(level, { total, stars, won }) {
+  function recordResult(level, { total, stars, won, perfect = false }) {
     const prev = data.levels[level] || { best: 0, stars: 0 };
     const entry = { best: Math.max(prev.best, total), stars: Math.max(prev.stars, stars) };
+    if (prev.perfect || perfect) entry.perfect = true; // sticky: a perfect run is never lost
     data.levels[level] = entry;
     if (won) data.unlocked = Math.max(data.unlocked, level + 1);
     persist();

@@ -9,6 +9,7 @@
   --accent: #e8862b;
   --danger: #d64545;
   --ok: #2fae5a;
+  --gold: #d9a520;
   --font: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 html, body {
@@ -166,6 +167,12 @@ html, body {
 .level:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
 .level.fresh { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset, 0 2px 0 rgba(0, 0, 0, 0.12); }
 .level.done { background: #dcedd3; border-color: #b9d3ad; }
+/* Perfect run: gold double border, like a foil sticker on the card. */
+.level.perfect {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold) inset, 0 0 0 3px #fff6d6 inset, 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+.level.perfect .n { color: #8a6a05; }
 .level .n { font-weight: 700; font-size: 15px; }
 .level .s { font-size: 10px; color: var(--accent); letter-spacing: 1px; height: 12px; }
 .level .b { font-size: 10px; color: var(--ink-soft); height: 12px; }

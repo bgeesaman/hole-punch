@@ -65,3 +65,13 @@ it('reads a save written under the old game name', () => {
   s.setAudio('sfx', 'low');
   expect(store.has(SAVE_KEY)).toBe(true);
 });
+
+it('remembers a perfect run for a level even after a worse replay', () => {
+  const s = createSave(memStorage());
+  s.recordResult(2, { total: 50, stars: 3, won: true, perfect: true });
+  expect(s.result(2).perfect).toBe(true);
+  s.recordResult(2, { total: 20, stars: 1, won: true, perfect: false });
+  expect(s.result(2)).toEqual({ best: 50, stars: 3, perfect: true });
+  s.recordResult(3, { total: 20, stars: 2, won: true });
+  expect(s.result(3).perfect).toBeUndefined();
+});

@@ -214,7 +214,7 @@ function endLevel() {
   audio.duck(true);
   input.release();
   const st = session.state;
-  const r = save.recordResult(level, { total: st.total, stars: st.stars, won: st.won });
+  const r = save.recordResult(level, { total: st.total, stars: st.stars, won: st.won, perfect: st.perfect });
   const note = st.won ? (r.newBest ? 'New best!' : '') : 'Reach the target to unlock the next level.';
   endScreen.show(st, st.won && level < LEVELS, note);
 }
