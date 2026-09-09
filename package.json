@@ -4,9 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "python3 -m http.server 5173",
     "test": "vitest run"
   },
   "dependencies": {
@@ -14,7 +12,6 @@
     "three": "^0.186.0"
   },
   "devDependencies": {
-    "vite": "^8.2.2",
     "vitest": "^5.0.0"
   }
 }

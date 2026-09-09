@@ -4,7 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hole Punch</title>
-    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="./src/style.css" />
+    <!-- No bundler: bare module names resolve through this map. Keep versions in step with package.json. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/",
+          "@dimforge/rapier3d-compat": "https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.20.0/dist/rapier.mjs"
+        }
+      }
+    </script>
   </head>
   <body>
     <canvas id="game"></canvas>
@@ -20,6 +30,6 @@
     <div id="hint" class="overlay">click to capture mouse</div>
     <div id="intro" class="overlay intro" hidden><span id="intro-text"></span></div>
     <div id="debug" class="overlay" hidden></div>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>

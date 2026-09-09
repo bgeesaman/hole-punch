@@ -6,13 +6,29 @@ a target score, and a hole that grows as you hit score milestones.
 
 ## Run
 
+There is no build step. The page is plain ES modules; `three` and Rapier load from jsDelivr
+through the import map in `index.html`. Any static file server works, since modules do not
+load from `file://`:
+
+```sh
+npm run dev        # python3 -m http.server 5173, then open http://localhost:5173
+```
+
+Tests need Node and the dev dependencies:
+
 ```sh
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # production build in dist/
-npm run preview    # serve the build
 npm test           # vitest: game logic and headless physics
 ```
+
+## Hosting on GitHub Pages
+
+Settings, Pages, source "Deploy from a branch", branch `main`, folder `/ (root)`. Every push
+to `main` is live at `https://<user>.github.io/<repo>/`. Paths in `index.html` are relative,
+so a project sub-path works without configuration.
+
+Dependency versions are pinned twice: in `package.json` for the tests, and in the import map
+for the browser. Bump both together.
 
 ## Play
 
@@ -53,8 +69,8 @@ test/                vitest suites (scoring, generator, save, physics)
 
 ## Notes
 
-- Rapier's WASM is inlined through `@dimforge/rapier3d-compat`, so the build is a single static
-  bundle with no special hosting needs.
+- Rapier's WASM is inlined in `@dimforge/rapier3d-compat`, so the browser loads it as one
+  ordinary module with no WASM hosting concerns.
 - The physics ground is a static box plus a kinematic annulus and pit wall that follow the hole.
   A contact filter drops table support for anything centred inside the hole.
 - Instanced pools are drawn with frustum culling off: three.js never refreshes an

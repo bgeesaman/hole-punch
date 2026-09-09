@@ -1,13 +1,7 @@
 # Dependencies
 node_modules/
 
-# Build output
-dist/
-dist-ssr/
-*.local
-
-# Vite / Vitest caches and reports
-.vite/
+# Vitest caches and reports
 .vitest/
 coverage/
 
