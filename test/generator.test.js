@@ -6,12 +6,13 @@ import { CATALOG, footprintFor } from '../src/game/catalog.js';
 describe('level curve', () => {
   it('ramps count, tiers, target, and side monotonically', () => {
     let prev = levelParams(1);
-    expect(prev.count).toBe(30);
+    expect(prev.count).toBe(45);
     expect(prev.tierMix.L).toBe(0);
     expect(prev.bombShare).toBe(0);
     for (let n = 2; n <= LEVELS; n++) {
       const p = levelParams(n);
       expect(p.count).toBeGreaterThanOrEqual(prev.count);
+      expect(p.secondsPerObject).toBeGreaterThanOrEqual(prev.secondsPerObject);
       expect(p.targetFraction).toBeGreaterThanOrEqual(prev.targetFraction);
       expect(p.side).toBeGreaterThanOrEqual(prev.side);
       expect(p.tierMix.S + p.tierMix.M + p.tierMix.L + p.tierMix.X).toBeCloseTo(1);
@@ -81,8 +82,8 @@ describe('generator', () => {
     }
   });
 
-  it('adds bombs from level 10 and computes target from fruit only', () => {
-    expect(generateLevel(levelParams(9)).counts.bombs).toBe(0);
+  it('adds bombs from level 5 and computes target from fruit only', () => {
+    expect(generateLevel(levelParams(4)).counts.bombs).toBe(0);
     const lvl = generateLevel(levelParams(40));
     expect(lvl.counts.bombs).toBeGreaterThan(0);
     expect(lvl.target).toBeLessThan(lvl.counts.available);
@@ -91,7 +92,7 @@ describe('generator', () => {
 
   it('level 1 is small, small-tier only, grids only', () => {
     const lvl = generateLevel(levelParams(1));
-    expect(lvl.counts.total).toBeLessThanOrEqual(34);
+    expect(lvl.counts.total).toBeLessThanOrEqual(50);
     for (const o of lvl.objects) expect(CATALOG[o.type].tier).not.toBe('L');
     expect(lvl.objects.every((o) => !o.type.startsWith('crate'))).toBe(true);
   });
