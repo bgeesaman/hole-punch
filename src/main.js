@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { createScene } from './render/scene.js';
-import { createHole, RIM_SCALE } from './render/hole.js';
+import { createHole } from './render/hole.js';
 import { createObjects } from './render/objects.js';
 import { createInput } from './input.js';
 import { createHud } from './ui/hud.js';
@@ -203,6 +203,7 @@ function startLevel(n = level) {
   view.fitSurface(side, { forceFollow: level >= CAMERA.followFromLevel });
   props.place(side, level);
   physics.setSurface(side);
+  hole.setSurface(side);
   input.setMode({ relative: view.state.follow, unitsPerPixel: view.unitsPerPixel() });
   spawnAll(current.objects.map((o) => ({ ...spawnDescriptor(o), visual: visualFor(o.type) })));
   session = createSession({
@@ -282,8 +283,10 @@ function update(dt) {
   if (running) {
     session.tick(dt);
     // Hole chases the cursor: exponential approach, capped by max speed.
-    // Clamp so the whole pit, rim included, stays on the table at the current (largest) radius.
-    const reach = Math.max(hole.state.radius, hole.state.targetRadius) * RIM_SCALE + SURFACE.edgeMargin;
+    // Clamp so the hole itself stays on the table at the current (largest) radius. Anything
+    // whose centre is still on the board can then be centred in the hole; the rim ring that
+    // would overhang is clipped at the board edge (hole.setSurface).
+    const reach = Math.max(hole.state.radius, hole.state.targetRadius) + SURFACE.edgeMargin;
     const target = input.update(side / 2 - reach);
     tmp.subVectors(target, pos);
     const dist = tmp.length();

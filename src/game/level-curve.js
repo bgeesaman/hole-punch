@@ -26,6 +26,7 @@ export function levelParams(n, mode = 'normal') {
     count,                                   // scoreable objects (fruit + crates)
     tierMix: { S: sS / norm, M: sM / norm, L: sL / norm, X: sX / norm },
     bombShare: n >= 5 ? lerp(0.02, 0.07, t) * diff.hazardMul : 0,
+    minHazards: diff.minHazards,
     // Which hazards stand in for grid cells, by weight. Minis hide in small-fruit grids from
     // level 15; TNT crates arrive at 25 and grow common.
     hazardMix: { bomb: 1, bombS: n >= 15 ? 1 : 0, tnt: n >= 25 ? lerp(0.4, 1.2, t) : 0 },

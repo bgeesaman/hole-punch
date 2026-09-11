@@ -20,7 +20,8 @@ export function createHowto({ onPlay }) {
           hole lingers near them, then blast fruit across the board and set off sticks nearby;
           swallow a lit one in time to defuse it.</li>
         <li><b>Mind the edge.</b> Fruit knocked off the board is lost. Clear the board with
-          nothing lost for a perfect bonus, and time left on the clock pays too.</li>
+          nothing lost and no bombs eaten for a perfect bonus, and time left on the clock pays
+          too.</li>
         <li><b>Click or press Escape</b> to release the mouse and pause.</li>
       </ul>
       <div class="buttons"><button id="howto-play">Let's go</button></div>

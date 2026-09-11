@@ -59,6 +59,7 @@ describe('scoring rules', () => {
     expect(stars({ total: 60, target: 60, cleared: false, secondsLeft: 0, seconds: 60 })).toBe(1);
     expect(stars({ total: 60, target: 60, cleared: true, secondsLeft: 10, seconds: 60 })).toBe(2);
     expect(stars({ total: 60, target: 60, cleared: true, secondsLeft: 15, seconds: 60 })).toBe(3);
+    expect(stars({ total: 60, target: 60, cleared: true, secondsLeft: 15, seconds: 60, bombs: 1 })).toBe(2);
   });
   it('target from available points ignores bombs', () => {
     const objs = [{ points: 1 }, { points: 5 }, { points: 20, kind: 'bomb' }, { points: 20 }];
@@ -91,7 +92,18 @@ describe('session', () => {
     expect(s.perfect).toBe(false); // one fruit was lost
     expect(s.total).toBe(215);
     expect(s.won).toBe(true);
-    expect(s.stars).toBe(3);
+    expect(s.stars).toBe(2); // cleared with time to spare, but a bomb was eaten
+  });
+
+  it('a clear after swallowing a bomb is not perfect', () => {
+    const sess = createSession({ target: 20, seconds: 30, fruitCount: 2 });
+    sess.swallow(bomb());
+    sess.swallow(fruit(20));
+    sess.swallow(fruit(20));
+    expect(sess.state.cleared).toBe(true);
+    expect(sess.state.perfect).toBe(false);
+    expect(sess.state.perfectBonus).toBe(0);
+    expect(sess.state.stars).toBe(2); // plenty of time left, but a bomb caps it
   });
 
   it('a clear with nothing lost is perfect and pays a bonus', () => {

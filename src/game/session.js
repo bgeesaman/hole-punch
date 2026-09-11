@@ -24,7 +24,7 @@ export function createSession({ target, seconds, fruitCount, thresholds, accessi
     cleared: false,
     bonus: 0,
     lost: 0,           // fruit lost off the edge
-    perfect: false,    // cleared with nothing lost
+    perfect: false,    // cleared with nothing lost and no bomb swallowed
     perfectBonus: 0,
     total: 0,
     won: false,
@@ -39,11 +39,11 @@ export function createSession({ target, seconds, fruitCount, thresholds, accessi
     s.reason = reason;
     s.cleared = reason === 'cleared';
     s.bonus = timeBonus(s.timeLeft, s.cleared);
-    s.perfect = s.cleared && s.lost === 0;
+    s.perfect = s.cleared && s.lost === 0 && s.bombs === 0;
     s.perfectBonus = s.perfect ? Math.round(s.score * SCORING.perfectBonus) : 0;
     s.total = s.score + s.bonus + s.perfectBonus;
     s.won = s.total >= s.target;
-    s.stars = stars({ total: s.total, target: s.target, cleared: s.cleared, secondsLeft: s.timeLeft, seconds: s.seconds });
+    s.stars = stars({ total: s.total, target: s.target, cleared: s.cleared, secondsLeft: s.timeLeft, seconds: s.seconds, bombs: s.bombs });
     s.events.push({ type: 'end', reason });
   }
 

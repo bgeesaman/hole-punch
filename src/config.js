@@ -27,8 +27,8 @@ export const TNT = {
 // Difficulty modes. Hard shortens the TNT arming time, adds more explosives, and blasts at
 // full strength; normal blasts at three quarters.
 export const DIFFICULTY = {
-  normal: { armSeconds: 2, hazardMul: 0.9, blastMul: 0.75 },
-  hard: { armSeconds: 1.25, hazardMul: 1.25, blastMul: 1 },
+  normal: { armSeconds: 2, hazardMul: 0.9, blastMul: 0.75, minHazards: 0 },
+  hard: { armSeconds: 1.25, hazardMul: 1.25, blastMul: 1, minHazards: 1 }, // every hard level has a bomb
 };
 
 export const SCORING = {
@@ -53,7 +53,7 @@ export const CAMERA = {
 export const SURFACE = {
   defaultSide: 20,
   thickness: 1.5,    // table slab thickness; the pit visual is exactly this deep
-  edgeMargin: 0.15,  // extra inset beyond the hole rim so the pit never overhangs the edge
+  edgeMargin: 0.03,  // the hole's edge stops here, where the pit and lip overlays are clipped (hole.js)
   deskDrop: 0.07,    // the cutting mat sits this far under the slab bottom
 };
 

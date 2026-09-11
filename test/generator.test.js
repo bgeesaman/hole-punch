@@ -25,6 +25,11 @@ describe('level curve', () => {
     expect(levelParams(60).tierMix.X).toBeGreaterThan(0);
   });
 
+  it('every hard level has at least one hazard, normal levels 1-4 have none', () => {
+    for (let n = 1; n <= LEVELS; n++) expect(generateLevel(levelParams(n, 'hard')).counts.bombs).toBeGreaterThan(0);
+    for (let n = 1; n <= 4; n++) expect(generateLevel(levelParams(n)).counts.bombs).toBe(0);
+  });
+
   it('hard mode has 25% more explosives than the curve, normal 10% fewer, same layout seed', () => {
     const n = levelParams(50), h = levelParams(50, 'hard');
     expect(h.bombShare).toBeCloseTo(n.bombShare * (1.25 / 0.9));

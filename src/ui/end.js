@@ -35,7 +35,7 @@ export function createEndScreen({ onRetry, onNext, onMenu }) {
     el.querySelector('#end-points').textContent = s.score;
     el.querySelector('#end-bonus').textContent = s.cleared ? `+${s.bonus}  (${s.timeLeft.toFixed(1)}s × 10)` : '0';
     el.querySelector('#end-perfect-row').hidden = !s.perfect;
-    el.querySelector('#end-perfect').textContent = `+${s.perfectBonus}  (nothing lost, +${Math.round(SCORING.perfectBonus * 100)}%)`;
+    el.querySelector('#end-perfect').textContent = `+${s.perfectBonus}  (nothing lost, no bombs, +${Math.round(SCORING.perfectBonus * 100)}%)`;
     el.querySelector('#end-total').textContent = s.total;
     el.querySelector('#end-target').textContent = s.target;
     el.classList.toggle('won', s.won);

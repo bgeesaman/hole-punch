@@ -15,6 +15,21 @@ export function createHole(scene) {
   const group = new THREE.Group();
   const SEG = 64;
 
+  // The hole may sit almost flush against the board edge. The pit (wall, floor, occluder) is
+  // clipped at the edge so it never pokes through the board's side face. The lip overlays are
+  // not clipped: clipping a flat ring drew a dark crescent at the tangent, and a lip that
+  // overhangs the edge by a few centimetres reads as a punched paper lip. Plane constants
+  // follow the board size.
+  const clip = [
+    new THREE.Plane(new THREE.Vector3(-1, 0, 0), 10),
+    new THREE.Plane(new THREE.Vector3(1, 0, 0), 10),
+    new THREE.Plane(new THREE.Vector3(0, 0, -1), 10),
+    new THREE.Plane(new THREE.Vector3(0, 0, 1), 10),
+  ];
+  // A centimetre outside the hole's reach (SURFACE.edgeMargin), still inside the board edge:
+  // the board cutout never reaches past the pit, and no hairline opens at the tangent.
+  function setSurface(side) { for (const pl of clip) pl.constant = side / 2 - SURFACE.edgeMargin + 0.01; }
+
   const rim = new THREE.Mesh(
     new THREE.RingGeometry(1, RIM_SCALE, SEG),
     new THREE.MeshBasicMaterial({ color: 0xcfc2a4, side: THREE.DoubleSide }), // cut card lip
@@ -96,6 +111,7 @@ export function createHole(scene) {
   // the cut runs through the mat and darkens over uFade units so the shaft reads as deep.
   const wallMat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
+    clippingPlanes: clip,
     uniforms: {
       uDepth: { value: PIT_DEPTH },
       uFade: { value: HOLE.darkDepth },
@@ -105,14 +121,18 @@ export function createHole(scene) {
       uFlash: { value: 0 },
     },
     vertexShader: `
+      #include <clipping_planes_pars_vertex>
       varying float vY;
       varying vec3 vNormalW;
       void main() {
         vY = position.y;
         vNormalW = normalize(mat3(modelMatrix) * normal);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        #include <clipping_planes_vertex>
       }`,
     fragmentShader: `
+      #include <clipping_planes_pars_fragment>
       uniform float uDepth;
       uniform float uFade;
       uniform float uBoard;
@@ -122,6 +142,7 @@ export function createHole(scene) {
       varying float vY;
       varying vec3 vNormalW;
       void main() {
+        #include <clipping_planes_fragment>
         // Geometry y runs +uDepth/2 (lip) to -uDepth/2 (floor). Depth below the lip:
         float depth = uDepth * 0.5 - vY;
         // Inward-facing normal: the cylinder normal points outward, we see the inside.
@@ -157,7 +178,7 @@ export function createHole(scene) {
 
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(1, SEG),
-    new THREE.MeshBasicMaterial({ color: 0x000000 }),
+    new THREE.MeshBasicMaterial({ color: 0x000000, clippingPlanes: clip }),
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -PIT_DEPTH + 0.01;
@@ -166,9 +187,9 @@ export function createHole(scene) {
   // Depth-only occluder: slightly larger than the wall, open at the top, rendered first.
   // Built as an open cylinder plus a bottom disc. (Do not build it from a capped cylinder
   // and filter geometry groups: groups are ignored for single-material meshes.)
-  const occMat = new THREE.MeshBasicMaterial({ colorWrite: false, side: THREE.FrontSide });
+  const occMat = new THREE.MeshBasicMaterial({ colorWrite: false, side: THREE.FrontSide, clippingPlanes: clip });
   const occSide = new THREE.Mesh(new THREE.CylinderGeometry(1.02, 1.02, PIT_DEPTH, SEG, 1, true), occMat);
-  occSide.position.y = -PIT_DEPTH / 2;
+  occSide.position.y = -PIT_DEPTH / 2 - 0.02; // top edge just under the ground, so it never fights it at a grazing angle
   occSide.renderOrder = -10;
   group.add(occSide);
   const occBottom = new THREE.Mesh(new THREE.CircleGeometry(1.02, SEG), occMat);
@@ -227,5 +248,5 @@ export function createHole(scene) {
     group.position.copy(state.position);
   }
 
-  return { group, state, setRadius, setProgress, setBomb, flash, update };
+  return { group, state, setRadius, setProgress, setBomb, setSurface, flash, update };
 }

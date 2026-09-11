@@ -85,11 +85,12 @@ export function timeBonus(secondsLeft, cleared) {
   return cleared ? Math.round(Math.max(0, secondsLeft) * 10) : 0;
 }
 
-// 0 = loss, 1 = win, 2 = win with the board cleared, 3 = cleared with >= 25% time left.
-export function stars({ total, target, cleared, secondsLeft, seconds }) {
+// 0 = loss, 1 = win, 2 = win with the board cleared, 3 = cleared with >= 25% time left and no
+// bomb swallowed. Eating a bomb caps a run at two stars.
+export function stars({ total, target, cleared, secondsLeft, seconds, bombs = 0 }) {
   if (total < target) return 0;
   if (!cleared) return 1;
-  return secondsLeft >= seconds * 0.25 ? 3 : 2;
+  return bombs === 0 && secondsLeft >= seconds * 0.25 ? 3 : 2;
 }
 
 // Available points and the derived target for a list of spawn descriptors.

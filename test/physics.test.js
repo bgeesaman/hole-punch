@@ -251,3 +251,18 @@ describe('blast', () => {
     expect(far.body.translation().x).toBeCloseTo(9, 1);
   });
 });
+
+describe('edge reach', () => {
+  it('a crate balanced on the board edge falls into a hole flush with that edge', async () => {
+    const p = await createPhysics();
+    p.setSurface(20); p.setHoleRadius(2.45);
+    // Crate centre 0.1 inside the edge (x = 9.9), hanging over it; hole centre at half - radius.
+    const crate = p.spawn({ shape: 'cuboid', size: { hx: 0.5, hy: 0.5, hz: 0.5 }, position: { x: 9.9, y: 0.5, z: 0 }, friction: 0.7, sleeping: false });
+    p.setHolePosition(-5, 0);
+    run(p, 1);
+    expect(crate.body.translation().y).toBeCloseTo(0.5, 1);
+    p.setHolePosition(10 - 2.45, 0);
+    const e = run(p, 2);
+    expect(e.swallowed).toHaveLength(1);
+  });
+});

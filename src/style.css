@@ -188,9 +188,12 @@ html, body {
 .level.perfect .n { color: #8a6a05; }
 /* Hard clear: crimson card. Must follow .done and .perfect so it wins the background. */
 .level.hard { background: var(--crimson); border-color: #8e1622; color: #fff4ec; }
+.level.hard .n { color: #fff4ec; }
 .level.hard .s { color: #ffd27a; }
 .level.hard .b { color: #ffd9d3; }
 .level.hard:hover:not(:disabled) { background: #c92a38; }
+/* Perfect on hard: gold border, inset ring in a darker crimson instead of cream. */
+.level.hard.perfect { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset, 0 0 0 3px #8e1622 inset, 0 2px 0 rgba(0, 0, 0, 0.12); }
 .level .n { font-weight: 700; font-size: 15px; }
 .level .s { font-size: 10px; color: var(--accent); letter-spacing: 1px; height: 12px; }
 .level .b { font-size: 10px; color: var(--ink-soft); height: 12px; }

@@ -138,7 +138,8 @@ export function generateLevel(params) {
 
   // Hazards replace grid cells. Each cell takes a hazard no bigger than the fruit it held:
   // minis in small grids, bombs and TNT in medium and larger ones.
-  const bombCount = Math.round(params.bombShare * objects.length);
+  const bombCount = Math.max(params.minHazards || 0, Math.round(params.bombShare * objects.length));
+  let placedHazards = 0;
   if (bombCount > 0) {
     const mix = params.hazardMix || { bomb: 1 };
     const candidates = objects.filter((o) => o.cell && footprintFor(o.type) >= 0.25);
@@ -151,6 +152,19 @@ export function generateLevel(params) {
       const kind = pickWeighted(rng, fits);
       o.type = kind === 'tnt' ? tntForCell(fp) : kind;
       o.position.y = CATALOG[o.type].restY;
+      placedHazards++;
+    }
+  }
+  // A required minimum that the mix could not place (no medium cell for a bomb yet) falls
+  // back to a plain bomb in any cell that fits one, else a mini in a small-fruit cell.
+  if (placedHazards < (params.minHazards || 0)) {
+    const cells = objects.filter((o) => o.cell && CATALOG[o.type].kind !== 'bomb');
+    while (placedHazards < params.minHazards && cells.length > 0) {
+      const o = cells.splice(Math.floor(rng() * cells.length), 1)[0];
+      const fp = footprintFor(o.type);
+      o.type = fp >= 0.5 ? 'bomb' : 'bombS';
+      o.position.y = CATALOG[o.type].restY;
+      placedHazards++;
     }
   }
   const fruit = objects.filter((o) => CATALOG[o.type].kind !== 'bomb');
