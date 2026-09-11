@@ -35,6 +35,15 @@ describe('creeper fuses', () => {
     expect(g.chargingIds).toEqual([]);
   });
 
+  it('a stick can be lit outright by a chain, without shortening one already burning', () => {
+    const f = createFuses({ armSeconds: 2, fuseSeconds: 7 });
+    expect(f.light(5)).toBe(true);
+    expect(f.fuseLeft(5)).toBe(7);
+    f.update(1, [{ id: 5, near: false }]);
+    expect(f.light(5)).toBe(false);
+    expect(f.fuseLeft(5)).toBe(6);
+  });
+
   it('a stick that leaves the board is forgotten', () => {
     const f = createFuses({ armSeconds: 1, fuseSeconds: 7 });
     step(f, 1.1, true);

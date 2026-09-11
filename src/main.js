@@ -328,6 +328,14 @@ function update(dt) {
         view.shakeCamera(2.6);
         despawn(rec);
         physics.remove(rec);
+        // Chain: any other stick within TNT.chain zones of the blast lights up.
+        let chained = false;
+        for (const other of physics.records.values()) {
+          if (other === rec || other.swallowed || !other.penalty?.blast) continue;
+          const d = Math.hypot(other.px - rec.px, other.pz - rec.pz) - other.size.r;
+          if (d <= reach * TNT.chain && fuses.light(other.id)) chained = true;
+        }
+        if (chained) audio.hiss();
       }
     }
   }

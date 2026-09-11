@@ -17,9 +17,11 @@ export const HOLE = {
 // TNT fuses: a stick arms when the hole lingers within `reach` hole widths of it, then burns
 // `fuseSeconds` and blasts on its own. Swallowing a lit stick defuses it: shrink, no blast.
 export const TNT = {
-  armSeconds: 1,
+  armSeconds: 2,
+  coolSeconds: 2,
   fuseSeconds: 7,
-  reach: 1, // hole widths from the hole's edge
+  reach: 1,        // zone: hole widths from the hole's edge
+  chain: 1.5,      // a detonation lights other sticks within this many zones of it
 };
 
 export const SCORING = {

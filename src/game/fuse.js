@@ -38,11 +38,18 @@ export function createFuses({ armSeconds, fuseSeconds, coolSeconds = 2 }) {
     return events;
   }
 
+  // Light a stick outright (a nearby detonation). Already-lit sticks keep their fuse.
+  function light(id) {
+    if (lit.has(id)) return false;
+    charge.delete(id);
+    lit.set(id, fuseSeconds);
+    return true;
+  }
   function forget(id) { charge.delete(id); lit.delete(id); }
   function clear() { charge.clear(); lit.clear(); }
 
   return {
-    update, forget, clear,
+    update, light, forget, clear,
     isLit: (id) => lit.has(id),
     fuseLeft: (id) => lit.get(id) ?? 0,
     charge: (id) => (charge.get(id) ?? 0) / armSeconds, // 0..1 while in or cooling from the zone

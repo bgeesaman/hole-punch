@@ -17,8 +17,8 @@ export function createHowto({ onPlay }) {
           next size.</li>
         <li><b>Avoid the bombs.</b> Swallowing one shrinks the hole for a while; the red arc
           counts it down. Tiny ones hide among small fruit. TNT sticks light their fuse if the
-          hole lingers near them, then blast fruit across the board; swallow a lit one in time
-          to defuse it.</li>
+          hole lingers near them, then blast fruit across the board and set off sticks nearby;
+          swallow a lit one in time to defuse it.</li>
         <li><b>Mind the edge.</b> Fruit knocked off the board is lost. Clear the board with
           nothing lost for a perfect bonus, and time left on the clock pays too.</li>
         <li><b>Click or press Escape</b> to release the mouse and pause.</li>
