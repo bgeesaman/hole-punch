@@ -39,8 +39,9 @@ export const CATALOG = {
   crateX:     { kind: 'fruit', tier: 'X', shape: 'cuboid', size: { hx: 1.3, hy: 1.3, hz: 1.3 }, restY: 1.3, friction: 0.7, restitution: 0.05 },
   bomb:       { kind: 'bomb', tier: 'M', shape: 'ball', size: { r: 0.5 }, restY: 0.5, penalty: BOMB },
   bombS:      { kind: 'bomb', tier: 'S', shape: 'ball', size: { r: 0.25 }, restY: 0.25, penalty: MINI },
-  tntM:       { kind: 'bomb', tier: 'M', shape: 'cuboid', size: { hx: 0.5, hy: 0.5, hz: 0.5 }, restY: 0.5, friction: 0.7, restitution: 0.05, penalty: TNT_M },
-  tntL:       { kind: 'bomb', tier: 'L', shape: 'cuboid', size: { hx: 1.0, hy: 1.0, hz: 1.0 }, restY: 1.0, friction: 0.7, restitution: 0.05, penalty: TNT_L },
+  // TNT: upright cylinders (sticks), the size of the crate tier they stand in for.
+  tntM:       { kind: 'bomb', tier: 'M', shape: 'cylinder', size: { hh: 0.5, r: 0.5 }, restY: 0.5, friction: 0.7, restitution: 0.05, penalty: TNT_M },
+  tntL:       { kind: 'bomb', tier: 'L', shape: 'cylinder', size: { hh: 1.0, r: 1.0 }, restY: 1.0, friction: 0.7, restitution: 0.05, penalty: TNT_L },
 };
 
 // Which hazard can stand in for a grid cell of a given footprint: it must be no bigger.

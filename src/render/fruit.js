@@ -182,30 +182,32 @@ function kiwiGeo() {
   return g;
 }
 
-// TNT: red cardboard with a label band.
+// TNT: a red paper stick with a label band wrapped around it. The texture wraps once around
+// the cylinder, so the label reads on the side; the caps get plain red.
 function tntTexture() {
   const c = document.createElement('canvas');
-  c.width = c.height = 128;
+  c.width = 256; c.height = 128;
   const g = c.getContext('2d');
   g.fillStyle = '#c83a2e';
-  g.fillRect(0, 0, 128, 128);
+  g.fillRect(0, 0, 256, 128);
   g.fillStyle = 'rgba(0, 0, 0, 0.08)';
-  for (let y = 0; y < 128; y += 6) g.fillRect(0, y, 128, 2);
-  g.strokeStyle = '#7a1f17';
-  g.lineWidth = 5;
-  g.strokeRect(2, 2, 124, 124);
+  for (let y = 0; y < 128; y += 6) g.fillRect(0, y, 256, 2);
+  g.fillStyle = '#7a1f17';
+  g.fillRect(0, 0, 256, 6); g.fillRect(0, 122, 256, 6);
   g.fillStyle = '#f6efe0';
-  g.fillRect(14, 44, 100, 40);
+  g.fillRect(0, 44, 256, 40);
   g.fillStyle = '#2b2823';
   g.font = 'bold 30px system-ui, sans-serif';
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   g.fillText('TNT', 64, 65);
+  g.fillText('TNT', 192, 65);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 const tntMat = withPitDarkening(new THREE.MeshStandardMaterial({ roughness: 1, map: tntTexture() }));
+const tntStick = (r, hh) => () => new THREE.CylinderGeometry(r, r, hh * 2, 14, 1);
 
 function fuseGeo() {
   const g = new THREE.CylinderGeometry(0.03, 0.03, 0.32, 5);
@@ -266,14 +268,14 @@ const VISUALS = {
     part('spark', sphere(0.07, 8, 6), plain, 0xffa33a, m4([0.14, 0.38, 0])),
   ] }),
   tntM: () => ({ parts: [
-    part('tnt100', box(1.0), tntMat, 0xffffff),
-    part('fuse', fuseGeo, matte, 0xd9c9a0, m4([0.1, 0.5, 0])),
-    part('spark', sphere(0.07, 8, 6), plain, 0xffa33a, m4([0.26, 0.8, 0])),
+    part('tntStickM', tntStick(0.5, 0.5), tntMat, 0xffffff),
+    part('fuse', fuseGeo, matte, 0xd9c9a0, m4([0.0, 0.5, 0])),
+    part('spark', sphere(0.07, 8, 6), plain, 0xffa33a, m4([0.16, 0.8, 0])),
   ] }),
   tntL: () => ({ parts: [
-    part('tnt200', box(2.0), tntMat, 0xffffff),
-    part('fuse', fuseGeo, matte, 0xd9c9a0, m4([0.2, 1.0, 0])),
-    part('spark', sphere(0.07, 8, 6), plain, 0xffa33a, m4([0.36, 1.3, 0])),
+    part('tntStickL', tntStick(1.0, 1.0), tntMat, 0xffffff),
+    part('fuse', fuseGeo, matte, 0xd9c9a0, m4([0.0, 1.0, 0])),
+    part('spark', sphere(0.07, 8, 6), plain, 0xffa33a, m4([0.16, 1.3, 0])),
   ] }),
   bomb: () => ({ parts: [
     part('sphere50', sphere(0.5), matte, 0x1f1d1a),
