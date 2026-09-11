@@ -8,10 +8,11 @@ describe('creeper fuses', () => {
     return out;
   };
 
-  it('arms after a second near the hole, then burns seven seconds wherever the hole goes', () => {
+  it('lights after a second in the zone, then burns seven seconds wherever the hole goes', () => {
     const f = createFuses({ armSeconds: 1, fuseSeconds: 7 });
     expect(step(f, 0.9, true)).toEqual([]);
     expect(f.isLit(1)).toBe(false);
+    expect(f.charge(1)).toBeCloseTo(0.9);
     expect(step(f, 0.2, true).map((e) => e.type)).toEqual(['lit']);
     expect(f.isLit(1)).toBe(true);
     expect(step(f, 6.9, false)).toEqual([]);   // far away, still burning
@@ -20,12 +21,18 @@ describe('creeper fuses', () => {
     expect(f.isLit(1)).toBe(false);
   });
 
-  it('backing off before it arms resets the timer', () => {
-    const f = createFuses({ armSeconds: 1, fuseSeconds: 7 });
+  it('leaving the zone before it lights cools the charge over two seconds', () => {
+    const f = createFuses({ armSeconds: 1, fuseSeconds: 7, coolSeconds: 2 });
     step(f, 0.8, true);
-    step(f, 0.1, false);
-    expect(step(f, 0.8, true)).toEqual([]);
-    expect(step(f, 0.3, true).map((e) => e.type)).toEqual(['lit']);
+    step(f, 1.0, false);
+    expect(f.charge(1)).toBeCloseTo(0.3, 1);   // 0.8 minus half of a full cool
+    expect(step(f, 0.6, true)).toEqual([]);     // back to 0.9, not yet
+    expect(step(f, 0.2, true).map((e) => e.type)).toEqual(['lit']);
+    const g = createFuses({ armSeconds: 1, fuseSeconds: 7, coolSeconds: 2 });
+    step(g, 0.9, true);
+    step(g, 2.0, false);
+    expect(g.charge(1)).toBe(0);
+    expect(g.chargingIds).toEqual([]);
   });
 
   it('a stick that leaves the board is forgotten', () => {

@@ -1,9 +1,10 @@
-// Creeper-style fuses. A stick arms after the hole has stayed near it for armSeconds, then
-// burns for fuseSeconds regardless of where the hole goes, and detonates. Backing off before
-// it arms resets the arming timer. Pure: the caller says which sticks are near each tick.
-export function createFuses({ armSeconds, fuseSeconds }) {
-  const near = new Map(); // id -> seconds the hole has been near
-  const lit = new Map();  // id -> seconds of fuse left
+// Creeper-style fuses. While the hole is near a stick its charge builds; at armSeconds the
+// stick lights, burns fuseSeconds regardless of where the hole goes, and detonates. Leaving
+// the zone before it lights lets the charge cool back to zero over coolSeconds. Pure: the
+// caller says which sticks are near each tick.
+export function createFuses({ armSeconds, fuseSeconds, coolSeconds = 2 }) {
+  const charge = new Map(); // id -> seconds of lingering, cooling when away
+  const lit = new Map();    // id -> seconds of fuse left
 
   // candidates: [{ id, near: boolean }] for every stick still on the board.
   function update(dt, candidates) {
@@ -17,26 +18,35 @@ export function createFuses({ armSeconds, fuseSeconds }) {
         else lit.set(c.id, t);
         continue;
       }
-      if (!c.near) { near.delete(c.id); continue; }
-      const t = (near.get(c.id) || 0) + dt;
-      if (t >= armSeconds) {
-        near.delete(c.id);
-        lit.set(c.id, fuseSeconds);
-        events.push({ type: 'lit', id: c.id });
-      } else near.set(c.id, t);
+      let t = charge.get(c.id) || 0;
+      if (c.near) {
+        t += dt;
+        if (t >= armSeconds) {
+          charge.delete(c.id);
+          lit.set(c.id, fuseSeconds);
+          events.push({ type: 'lit', id: c.id });
+          continue;
+        }
+      } else {
+        t -= dt * (armSeconds / coolSeconds);
+        if (t <= 0) { charge.delete(c.id); continue; }
+      }
+      charge.set(c.id, t);
     }
-    for (const id of [...near.keys()]) if (!seen.has(id)) near.delete(id);
+    for (const id of [...charge.keys()]) if (!seen.has(id)) charge.delete(id);
     for (const id of [...lit.keys()]) if (!seen.has(id)) lit.delete(id);
     return events;
   }
 
-  function forget(id) { near.delete(id); lit.delete(id); }
-  function clear() { near.clear(); lit.clear(); }
+  function forget(id) { charge.delete(id); lit.delete(id); }
+  function clear() { charge.clear(); lit.clear(); }
 
   return {
     update, forget, clear,
     isLit: (id) => lit.has(id),
     fuseLeft: (id) => lit.get(id) ?? 0,
+    charge: (id) => (charge.get(id) ?? 0) / armSeconds, // 0..1 while in or cooling from the zone
     get litIds() { return [...lit.keys()]; },
+    get chargingIds() { return [...charge.keys()]; },
   };
 }

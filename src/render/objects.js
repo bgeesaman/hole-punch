@@ -77,6 +77,12 @@ export function createObjects(scene) {
     for (const part of handle.parts) removeSlot(part.pool, part.slotKey);
   }
 
+  // Replace one part's local matrix for this instance only (a spark sliding down a fuse).
+  function setPartLocal(handle, index, matrix) {
+    const part = handle.parts[index];
+    if (part) part.local = matrix;
+  }
+
   // Tint one part of an instance (used for the lit-TNT flash). Instance colors multiply the
   // material color, so tints can only darken or shift, never brighten past the base.
   function setPartColor(handle, index, color) {
@@ -111,7 +117,7 @@ export function createObjects(scene) {
     }
   }
 
-  return { add, remove, setTransform, setPartColor, commit, clear };
+  return { add, remove, setTransform, setPartColor, setPartLocal, commit, clear };
 }
 
 // Shared "darken below the table" treatment for any object material.

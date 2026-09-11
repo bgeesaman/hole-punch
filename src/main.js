@@ -132,6 +132,11 @@ function setIntro(phase) {
 const visuals = new Map(); // record id -> instanced visual handle
 const fuses = createFuses(TNT);
 const tntCandidates = [];
+const sparkLocal = new THREE.Matrix4();
+const sparkPos = new THREE.Vector3(), sparkPos2 = new THREE.Vector3(), sparkQuat = new THREE.Quaternion();
+const tintColor = new THREE.Color();
+// Charging tint: white at no charge toward amber at full.
+function tintFor(charge) { return tintColor.set(0xffffff).lerp(new THREE.Color(0xffb040), 0.35 + 0.65 * charge).getHex(); }
 
 function spawnAll(list) {
   for (const o of list) {
@@ -318,43 +323,41 @@ function update(dt) {
       else if (ev.type === 'detonate') {
         const b = rec.penalty.blast;
         physics.blast(rec.px, rec.pz, b.radius, b.strength);
-        particles.burst(rec.px, rec.pz, b.radius * 0.5, 0xc83a2e, 14, 2.4);
+        particles.explode(rec.px, rec.pz, b.radius);
         audio.tnt();
-        view.shakeCamera(2.4);
+        view.shakeCamera(2.6);
         despawn(rec);
         physics.remove(rec);
       }
     }
   }
-  // Lit sticks flash, faster as the fuse runs down.
-  for (const id of fuses.litIds) {
+  // In the zone: the stick flashes, harder as the charge builds, and fades as it cools.
+  for (const id of fuses.chargingIds) {
     const h = visuals.get(id);
     if (!h) continue;
-    const left = fuses.fuseLeft(id);
-    const period = 0.12 + 0.5 * Math.min(1, left / TNT.fuseSeconds);
-    const on = ((TNT.fuseSeconds - left) % period) < period * 0.5;
-    objects.setPartColor(h, 0, on ? 0xffffff : 0xffcf6a);
+    const ch = fuses.charge(id);
+    const on = (s.clock % 0.36) < 0.18;
+    objects.setPartColor(h, 0, on ? 0xffffff : tintFor(ch));
   }
-
-  const gameEvents = session.consume();
-  if (running || gameEvents.length) refreshHud();
-  for (const ev of gameEvents) {
-    if (ev.type === 'end') { endLevel(); if (s.won) audio.win(); else audio.lose(); }
-    else if (ev.type === 'milestone' || ev.type === 'regrow') { hole.flash(); audio.grow(); }
-    else if (ev.type === 'swallow') audio.plop(ev.tier);
-    else if (ev.type === 'bomb') {
-      if (ev.blast) {
-        // TNT: fling everything nearby, a bigger shake, a ring of scraps.
-        physics.blast(pos.x, pos.z, ev.blast.radius, ev.blast.strength);
-        particles.burst(pos.x, pos.z, ev.blast.radius * 0.5, 0xc83a2e, 14, 2.4);
-        audio.tnt();
-        view.shakeCamera(2.4);
-      } else {
-        audio.bomb();
-        view.shakeCamera(ev.steps > 1 ? 2 : 1.4);
-      }
+  // Lit: faster flashing, and the spark slides down the fuse throwing sparks.
+  for (const id of fuses.litIds) {
+    const rec = physics.records.get(id);
+    const h = visuals.get(id);
+    if (!h || !rec) continue;
+    const left = fuses.fuseLeft(id);
+    const k = left / TNT.fuseSeconds; // 1 -> 0
+    const period = 0.1 + 0.4 * k;
+    const on = ((TNT.fuseSeconds - left) % period) < period * 0.5;
+    objects.setPartColor(h, 0, on ? 0xffffff : 0xffb040);
+    // Fuse geometry: base on the stick top, tip 0.153 out and 0.281 up (see fuseGeo).
+    const hh = rec.size.hh;
+    sparkLocal.makeTranslation(0.153 * k, hh + 0.281 * k + 0.02, 0);
+    objects.setPartLocal(h, 2, sparkLocal);
+    if (running && Math.random() < 0.9) {
+      const t = rec.body.translation(), q = rec.body.rotation();
+      sparkPos.set(0.153 * k, hh + 0.281 * k + 0.05, 0).applyQuaternion(sparkQuat.set(q.x, q.y, q.z, q.w)).add(sparkPos2.set(t.x, t.y, t.z));
+      particles.spray(sparkPos.x, sparkPos.y, sparkPos.z, Math.random() < 0.5 ? 0xffd36a : 0xff8a2a, 1, 1.6);
     }
-    else if (ev.type === 'lost') audio.lost();
   }
   // Countdown ticks under 10 s.
   if (running && s.timeLeft < 10) {
