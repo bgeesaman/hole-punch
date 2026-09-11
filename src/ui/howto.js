@@ -16,8 +16,9 @@ export function createHowto({ onPlay }) {
         <li><b>The hole grows</b> as you score. The green arc on the lip shows progress to the
           next size.</li>
         <li><b>Avoid the bombs.</b> Swallowing one shrinks the hole for a while; the red arc
-          counts it down. Tiny ones hide among small fruit, and TNT sticks blast fruit across
-          the board.</li>
+          counts it down. Tiny ones hide among small fruit. TNT sticks light their fuse if the
+          hole lingers near them, then blast fruit across the board; swallow a lit one in time
+          to defuse it.</li>
         <li><b>Mind the edge.</b> Fruit knocked off the board is lost. Clear the board with
           nothing lost for a perfect bonus, and time left on the clock pays too.</li>
         <li><b>Click or press Escape</b> to release the mouse and pause.</li>

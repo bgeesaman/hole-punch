@@ -14,6 +14,14 @@ export const HOLE = {
   darkDepth: 10,     // objects and walls fade to black over this many units below the table
 };
 
+// TNT fuses: a stick arms when the hole lingers within `reach` hole widths of it, then burns
+// `fuseSeconds` and blasts on its own. Swallowing a lit stick defuses it: shrink, no blast.
+export const TNT = {
+  armSeconds: 1,
+  fuseSeconds: 7,
+  reach: 1, // hole widths from the hole's edge
+};
+
 export const SCORING = {
   perfectBonus: 0.25, // clearing the board with nothing lost off the edge adds this share of fruit points
 };

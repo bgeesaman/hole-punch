@@ -8,6 +8,7 @@ import { createEndScreen } from './ui/end.js';
 import { createMenu } from './ui/menu.js';
 import { createPause } from './ui/pause.js';
 import { createHowto } from './ui/howto.js';
+import { createFuses } from './game/fuse.js';
 import { createSave } from './game/save.js';
 import { createAudio } from './audio.js';
 import { createParticles } from './render/particles.js';
@@ -19,7 +20,7 @@ import { levelParams, LEVELS } from './game/level-curve.js';
 import { generateLevel } from './game/generator.js';
 import { spawnDescriptor } from './game/catalog.js';
 import { visualFor, colorFor } from './render/fruit.js';
-import { HOLE, SURFACE, CAMERA } from './config.js';
+import { HOLE, SURFACE, CAMERA, TNT } from './config.js';
 
 const canvas = document.getElementById('game');
 const view = createScene(canvas);
@@ -129,6 +130,8 @@ function setIntro(phase) {
   if (phase === 'ready') audio.ready(); else audio.go();
 }
 const visuals = new Map(); // record id -> instanced visual handle
+const fuses = createFuses(TNT);
+const tntCandidates = [];
 
 function spawnAll(list) {
   for (const o of list) {
@@ -181,6 +184,7 @@ function startLevel(n = level) {
   hudEl.hidden = false;
   hintEl.hidden = false;
   physics.clear();
+  fuses.clear();
   objects.clear();
   particles.clear();
   visuals.clear();
@@ -291,11 +295,46 @@ function update(dt) {
   const events = running ? physics.step(dt) : { swallowed: [], removed: [], lost: [] };
   physMs = performance.now() - t0;
   for (const rec of events.swallowed) {
-    session.swallow(rec);
+    session.swallow(rec, { defused: fuses.isLit(rec.id) });
+    fuses.forget(rec.id);
     particles.burst(pos.x, pos.z, hole.state.radius, colorFor(rec.type), rec.kind === 'bomb' ? 6 : 3 + 1 * (rec.tier === 'L'), rec.kind === 'bomb' ? 1.6 : 1);
   }
-  for (const rec of events.lost) { session.lose(rec); despawn(rec); }
+  for (const rec of events.lost) { session.lose(rec); fuses.forget(rec.id); despawn(rec); }
   for (const rec of events.removed) despawn(rec);
+
+  // TNT fuses: arm when the hole lingers within TNT.reach hole widths of a stick, burn, blow.
+  if (running) {
+    tntCandidates.length = 0;
+    const reach = hole.state.radius * (1 + 2 * TNT.reach);
+    for (const rec of physics.records.values()) {
+      if (rec.swallowed || !rec.penalty?.blast) continue;
+      const d = Math.hypot(rec.px - pos.x, rec.pz - pos.z) - rec.size.r;
+      tntCandidates.push({ id: rec.id, near: d <= reach });
+    }
+    for (const ev of fuses.update(dt, tntCandidates)) {
+      const rec = physics.records.get(ev.id);
+      if (!rec) continue;
+      if (ev.type === 'lit') audio.hiss();
+      else if (ev.type === 'detonate') {
+        const b = rec.penalty.blast;
+        physics.blast(rec.px, rec.pz, b.radius, b.strength);
+        particles.burst(rec.px, rec.pz, b.radius * 0.5, 0xc83a2e, 14, 2.4);
+        audio.tnt();
+        view.shakeCamera(2.4);
+        despawn(rec);
+        physics.remove(rec);
+      }
+    }
+  }
+  // Lit sticks flash, faster as the fuse runs down.
+  for (const id of fuses.litIds) {
+    const h = visuals.get(id);
+    if (!h) continue;
+    const left = fuses.fuseLeft(id);
+    const period = 0.12 + 0.5 * Math.min(1, left / TNT.fuseSeconds);
+    const on = ((TNT.fuseSeconds - left) % period) < period * 0.5;
+    objects.setPartColor(h, 0, on ? 0xffffff : 0xffcf6a);
+  }
 
   const gameEvents = session.consume();
   if (running || gameEvents.length) refreshHud();
@@ -355,7 +394,7 @@ requestAnimationFrame(frame);
 if (debug) {
   window.holepunch = {
     get session() { return session; },
-    hole, physics, objects, input, view, audio, particles,
+    hole, physics, objects, input, view, audio, particles, fuses,
     setCursor(clientX, clientY) { input.setCursor(clientX, clientY); },
     setHoleStep(n) { session.state.milestones = n; session.state.bombs = 0; refreshHud(); },
     worldToClient,

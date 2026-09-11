@@ -77,6 +77,18 @@ export function createObjects(scene) {
     for (const part of handle.parts) removeSlot(part.pool, part.slotKey);
   }
 
+  // Tint one part of an instance (used for the lit-TNT flash). Instance colors multiply the
+  // material color, so tints can only darken or shift, never brighten past the base.
+  function setPartColor(handle, index, color) {
+    const part = handle.parts[index];
+    if (!part) return;
+    const slot = part.pool.index.get(part.slotKey);
+    if (slot === undefined) return;
+    tmpC.set(color);
+    part.pool.mesh.setColorAt(slot, tmpC);
+    part.pool.mesh.instanceColor.needsUpdate = true;
+  }
+
   function setTransform(id, handle, t, q) {
     tmpP.set(t.x, t.y, t.z);
     tmpQ.set(q.x, q.y, q.z, q.w);
@@ -99,7 +111,7 @@ export function createObjects(scene) {
     }
   }
 
-  return { add, remove, setTransform, commit, clear };
+  return { add, remove, setTransform, setPartColor, commit, clear };
 }
 
 // Shared "darken below the table" treatment for any object material.

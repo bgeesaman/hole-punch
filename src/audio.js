@@ -129,6 +129,8 @@ export function createAudio({ music: musicLevel = 'low', sfx: sfxLevel = 'normal
       tone({ type: 'square', freq: 165, to: 82, dur: 0.6, gain: 0.15, delay: 0.05 });
     },
     lost() { tone({ type: 'sine', freq: 300, to: 120, dur: 0.25, gain: 0.12 }); },
+    // A fuse catches: a short hiss.
+    hiss() { noise({ dur: 0.9, gain: 0.22, freq: 2400 }); tone({ type: 'square', freq: 1800, to: 2600, dur: 0.12, gain: 0.05 }); },
     ready() { tone({ type: 'triangle', freq: 440, dur: 0.18, gain: 0.25 }); },
     go() { tone({ type: 'triangle', freq: 660, dur: 0.28, gain: 0.3 }); tone({ type: 'sine', freq: 1320, dur: 0.2, gain: 0.1 }); },
   };

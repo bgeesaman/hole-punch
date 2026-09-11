@@ -76,14 +76,15 @@ export function createSession({ target, seconds, fruitCount, thresholds, accessi
     if (s.timeLeft === 0) end('timeup');
   }
 
-  // A fruit or bomb went into the hole.
-  function swallow(rec) {
+  // A fruit or bomb went into the hole. A lit stick swallowed in time is defused: the shrink
+  // still applies, the blast does not.
+  function swallow(rec, { defused = false } = {}) {
     if (s.ended) return;
     if (rec.kind === 'bomb') {
       const penalty = rec.penalty || { steps: 1, seconds: HOLE.bombShrinkSeconds };
       s.bombs++;
       s.shrinks.push({ until: s.clock + penalty.seconds, steps: penalty.steps, seconds: penalty.seconds });
-      s.events.push({ type: 'bomb', steps: penalty.steps, blast: penalty.blast || null });
+      s.events.push({ type: 'bomb', steps: penalty.steps, blast: defused ? null : penalty.blast || null, defused });
       return;
     }
     s.score += rec.points;
