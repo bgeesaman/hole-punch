@@ -123,6 +123,90 @@ function pineappleCrownGeo() {
   }
   return mergeGeometries(leaves);
 }
+// Pumpkin: a ring of tall lobes around a core, so the silhouette is ribbed from every side.
+function pumpkinGeo() {
+  const parts = [];
+  const n = 8;
+  for (let i = 0; i < n; i++) {
+    const lobe = new THREE.SphereGeometry(0.62, 10, 8);
+    lobe.scale(1, 2.0, 1);
+    const a = (i / n) * Math.PI * 2;
+    lobe.translate(Math.cos(a) * 0.7, 0, Math.sin(a) * 0.7);
+    parts.push(lobe);
+  }
+  const core = new THREE.SphereGeometry(1.1, 12, 9);
+  core.scale(0.95, 1.1, 0.95);
+  parts.push(core);
+  return mergeGeometries(parts);
+}
+function pumpkinStemGeo() {
+  const g = new THREE.CylinderGeometry(0.1, 0.16, 0.45, 6);
+  g.translate(0, 0.2, 0);
+  g.rotateZ(0.25);
+  return g;
+}
+function pearGeo() {
+  const base = new THREE.SphereGeometry(0.45, 12, 9);
+  base.translate(0, -0.05, 0);
+  const top = new THREE.SphereGeometry(0.3, 10, 8);
+  top.translate(0, 0.28, 0);
+  return mergeGeometries([base, top]);
+}
+function lemonGeo() {
+  const g = new THREE.SphereGeometry(0.46, 12, 8);
+  g.scale(1.2, 0.85, 0.85);
+  const a = new THREE.SphereGeometry(0.1, 6, 5); a.translate(0.56, 0, 0);
+  const b = new THREE.SphereGeometry(0.1, 6, 5); b.translate(-0.56, 0, 0);
+  return mergeGeometries([g, a, b]);
+}
+function strawberryGeo() {
+  const g = new THREE.SphereGeometry(0.25, 10, 8);
+  g.scale(0.95, 1.15, 0.95);
+  g.translate(0, -0.03, 0);
+  return g;
+}
+function calyxGeo() {
+  const leaves = [];
+  for (let i = 0; i < 5; i++) {
+    const leaf = new THREE.ConeGeometry(0.05, 0.18, 4);
+    leaf.translate(0, 0.09, 0);
+    leaf.rotateX(1.25);
+    leaf.rotateY((i / 5) * Math.PI * 2);
+    leaves.push(leaf);
+  }
+  return mergeGeometries(leaves);
+}
+function kiwiGeo() {
+  const g = new THREE.SphereGeometry(0.25, 10, 7);
+  g.scale(1.15, 0.9, 0.9);
+  return g;
+}
+
+// TNT: red cardboard with a label band.
+function tntTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = '#c83a2e';
+  g.fillRect(0, 0, 128, 128);
+  g.fillStyle = 'rgba(0, 0, 0, 0.08)';
+  for (let y = 0; y < 128; y += 6) g.fillRect(0, y, 128, 2);
+  g.strokeStyle = '#7a1f17';
+  g.lineWidth = 5;
+  g.strokeRect(2, 2, 124, 124);
+  g.fillStyle = '#f6efe0';
+  g.fillRect(14, 44, 100, 40);
+  g.fillStyle = '#2b2823';
+  g.font = 'bold 30px system-ui, sans-serif';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText('TNT', 64, 65);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const tntMat = withPitDarkening(new THREE.MeshStandardMaterial({ roughness: 1, map: tntTexture() }));
+
 function fuseGeo() {
   const g = new THREE.CylinderGeometry(0.03, 0.03, 0.32, 5);
   g.translate(0, 0.16, 0);
@@ -158,9 +242,39 @@ const VISUALS = {
     part('pineBody', pineappleBodyGeo, matte, 0xd9a23b, m4([0, -0.05, 0])),
     part('pineCrown', pineappleCrownGeo, plain, 0x3f8f3a, m4([0, 0.65, 0])),
   ] }),
+  kiwi: () => ({ parts: [part('kiwi', kiwiGeo, matte, 0x8a6a3c)] }),
+  strawberry: () => ({ parts: [
+    part('strawberry', strawberryGeo, plain, 0xe23c4a),
+    part('calyx', calyxGeo, plain, 0x3f8f3a, m4([0, 0.22, 0])),
+  ] }),
+  pear: () => ({ parts: [
+    part('pear', pearGeo, plain, 0xb9c94a),
+    part('stem', stemGeo, matte, 0x5a3a1e, m4([0, 0.62, 0])),
+  ] }),
+  lemon: () => ({ parts: [part('lemon', lemonGeo, plain, 0xf2e13a)] }),
+  pumpkin: () => ({ parts: [
+    part('pumpkin', pumpkinGeo, plain, 0xe8862b),
+    part('pumpkinStem', pumpkinStemGeo, matte, 0x5f7a2e, m4([0, 1.2, 0])),
+  ] }),
   crateS: () => ({ parts: [part('box50', box(0.5), woodMat, 0xffffff)] }),
   crateM: () => ({ parts: [part('box100', box(1.0), woodMat, 0xffffff)] }),
   crateL: () => ({ parts: [part('box200', box(2.0), woodMat, 0xffffff)] }),
+  crateX: () => ({ parts: [part('box260', box(2.6), woodMat, 0xffffff)] }),
+  bombS: () => ({ parts: [
+    part('sphere25', sphere(0.25, 10, 7), matte, 0x1f1d1a),
+    part('fuseS', () => { const g = new THREE.CylinderGeometry(0.02, 0.02, 0.18, 5); g.translate(0, 0.09, 0); g.rotateZ(-0.5); return g; }, matte, 0xd9c9a0, m4([0.05, 0.2, 0])),
+    part('spark', sphere(0.07, 8, 6), plain, 0xffa33a, m4([0.14, 0.38, 0])),
+  ] }),
+  tntM: () => ({ parts: [
+    part('tnt100', box(1.0), tntMat, 0xffffff),
+    part('fuse', fuseGeo, matte, 0xd9c9a0, m4([0.1, 0.5, 0])),
+    part('spark', sphere(0.07, 8, 6), plain, 0xffa33a, m4([0.26, 0.8, 0])),
+  ] }),
+  tntL: () => ({ parts: [
+    part('tnt200', box(2.0), tntMat, 0xffffff),
+    part('fuse', fuseGeo, matte, 0xd9c9a0, m4([0.2, 1.0, 0])),
+    part('spark', sphere(0.07, 8, 6), plain, 0xffa33a, m4([0.36, 1.3, 0])),
+  ] }),
   bomb: () => ({ parts: [
     part('sphere50', sphere(0.5), matte, 0x1f1d1a),
     part('fuse', fuseGeo, matte, 0xd9c9a0, m4([0.08, 0.42, 0])),

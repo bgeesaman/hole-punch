@@ -100,7 +100,7 @@ export function createAudio({ music: musicLevel = 'low', sfx: sfxLevel = 'normal
     duck(on) { ducked = on; applyMusicVolume(); },
     // Swallow: a plop whose pitch drops with size. Slight random detune keeps runs lively.
     plop(tier) {
-      const base = { S: 640, M: 420, L: 260 }[tier] || 420;
+      const base = { S: 640, M: 420, L: 260, X: 170 }[tier] || 420;
       const f = base * (0.95 + Math.random() * 0.1);
       tone({ type: 'sine', freq: f * 1.6, to: f * 0.7, dur: 0.14, gain: 0.35 });
       tone({ type: 'triangle', freq: f * 0.5, dur: 0.08, gain: 0.12 });
@@ -108,6 +108,13 @@ export function createAudio({ music: musicLevel = 'low', sfx: sfxLevel = 'normal
     bomb() {
       noise({ dur: 0.35, gain: 0.5, freq: 250 });
       tone({ type: 'sawtooth', freq: 140, to: 50, dur: 0.4, gain: 0.35 });
+    },
+    // TNT: a longer, deeper boom with a crack on top.
+    tnt() {
+      noise({ dur: 0.08, gain: 0.6, freq: 3000 });
+      noise({ dur: 0.7, gain: 0.7, freq: 180, delay: 0.02 });
+      tone({ type: 'sawtooth', freq: 90, to: 30, dur: 0.8, gain: 0.45 });
+      tone({ type: 'sine', freq: 60, to: 25, dur: 0.9, gain: 0.4, delay: 0.05 });
     },
     grow() {
       [523, 659, 784, 1047].forEach((f, i) => tone({ type: 'triangle', freq: f, dur: 0.22, gain: 0.25, delay: i * 0.06 }));

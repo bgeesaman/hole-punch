@@ -2,8 +2,9 @@ import { HOLE } from '../config.js';
 
 // Pure scoring rules. No DOM, no physics.
 
-// Fractions of the target score at which the hole grows one step, by default.
-export const MILESTONES = [0.25, 0.5, 0.75, 1.0];
+// Fractions of the target score at which the hole grows one step, by default. Five growths
+// take the hole from the start size to the sixth and largest.
+export const MILESTONES = [0.2, 0.4, 0.6, 0.8, 1.0];
 
 export function defaultThresholds(target) {
   return MILESTONES.map((f) => Math.ceil(target * f));

@@ -241,7 +241,7 @@ export async function createPhysics() {
   // size: ball {r}; cuboid {hx,hy,hz}; cylinder {hh,r}; capsule {hh,r}
   // sleeping: level layouts are placed at rest, so bodies start asleep and wake on contact
   // or when the hole comes near. This avoids a 1000-body settle spike at level load.
-  function spawn({ shape, size, position, rotation, tier = 'S', points = 1, kind = 'fruit', friction = 0.5, restitution = 0.2, density = 1, sleeping = true, linearDamping, angularDamping, clearance = 0, type = null }) {
+  function spawn({ shape, size, position, rotation, tier = 'S', points = 1, kind = 'fruit', friction = 0.5, restitution = 0.2, density = 1, sleeping = true, linearDamping, angularDamping, clearance = 0, type = null, penalty = null }) {
     const damp = shape === 'ball' ? PHYSICS.ball : shape === 'capsule' || shape === 'cylinder' ? PHYSICS.roller : PHYSICS.crate;
     linearDamping ??= damp.linearDamping;
     angularDamping ??= damp.angularDamping;
@@ -273,7 +273,7 @@ export async function createPhysics() {
       : shape === 'cylinder' ? Math.min(size.hh, size.r)
       : size.r;
     const id = nextId++;
-    const rec = { id, body, collider, shape, size, radius, tier, points, kind, clearance, type,
+    const rec = { id, body, collider, shape, size, radius, tier, points, kind, clearance, type, penalty,
       px: position.x, py: position.y, pz: position.z, swallowed: false, restY, synced: false };
     body.userData = rec;
     records.set(id, rec);
@@ -306,6 +306,21 @@ export async function createPhysics() {
       const dx = rec.px - state.holeX, dz = rec.pz - state.holeZ;
       const reach = state.holeRadius + rec.radius + 0.1;
       if (dx * dx + dz * dz < reach * reach) rec.body.wakeUp();
+    }
+  }
+
+  // Blast: fling everything within radius of (x, z) outward and a little up, strongest at the
+  // centre. Strength is an impulse per unit mass, so big and small objects fly alike.
+  function blast(x, z, radius, strength) {
+    for (const rec of records.values()) {
+      if (rec.swallowed) continue;
+      const dx = rec.px - x, dz = rec.pz - z;
+      const d = Math.hypot(dx, dz);
+      if (d > radius) continue;
+      const falloff = 1 - (d / radius) * 0.7;
+      const nx = d > 1e-3 ? dx / d : Math.cos(rec.id), nz = d > 1e-3 ? dz / d : Math.sin(rec.id);
+      const m = rec.body.mass() * strength * falloff;
+      rec.body.applyImpulse({ x: nx * m, y: 0.45 * m, z: nz * m }, true);
     }
   }
 
@@ -418,5 +433,5 @@ export async function createPhysics() {
   setSurface(SURFACE.defaultSide);
   buildRim(state.holeRadius);
 
-  return { world, state, records, setSurface, setHoleRadius, setHolePosition, spawn, remove, step, forEach, forEachMoving, stats, clear };
+  return { world, state, records, setSurface, setHoleRadius, setHolePosition, spawn, remove, step, blast, forEach, forEachMoving, stats, clear };
 }

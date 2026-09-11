@@ -14,12 +14,29 @@ describe('level curve', () => {
       expect(p.count).toBeGreaterThanOrEqual(prev.count);
       expect(p.targetFraction).toBeGreaterThanOrEqual(prev.targetFraction);
       expect(p.side).toBeGreaterThanOrEqual(prev.side);
-      expect(p.tierMix.S + p.tierMix.M + p.tierMix.L).toBeCloseTo(1);
+      expect(p.tierMix.S + p.tierMix.M + p.tierMix.L + p.tierMix.X).toBeCloseTo(1);
       prev = p;
     }
     expect(prev.count).toBe(1000);
     expect(prev.side).toBe(64);
     expect(levelParams(10).bombShare).toBeGreaterThan(0);
+    expect(levelParams(39).tierMix.X).toBe(0);
+    expect(levelParams(60).tierMix.X).toBeGreaterThan(0);
+  });
+
+  it('hazards arrive by level: bombs at 10, minis at 15, TNT at 25, all sized to their cell', () => {
+    const types = (n) => new Set(generateLevel(levelParams(n)).objects.map((o) => o.type));
+    expect([...types(10)].filter((t) => CATALOG[t].kind === 'bomb')).toEqual(['bomb']);
+    for (const n of [20, 40, 70, 100]) {
+      const lvl = generateLevel(levelParams(n));
+      const hazards = lvl.objects.filter((o) => CATALOG[o.type].kind === 'bomb');
+      expect(hazards.length).toBeGreaterThan(0);
+      for (const h of hazards) expect(h.position.y).toBeCloseTo(CATALOG[h.type].restY);
+    }
+    const late = [40, 55, 70, 85, 100].flatMap((n) => generateLevel(levelParams(n)).objects.map((o) => o.type));
+    expect(late).toContain('bombS');
+    expect(late.some((t) => t === 'tntM' || t === 'tntL')).toBe(true);
+    expect(late).toContain('pumpkin');
   });
 });
 

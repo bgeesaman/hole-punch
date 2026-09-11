@@ -303,7 +303,18 @@ function update(dt) {
     if (ev.type === 'end') { endLevel(); if (s.won) audio.win(); else audio.lose(); }
     else if (ev.type === 'milestone' || ev.type === 'regrow') { hole.flash(); audio.grow(); }
     else if (ev.type === 'swallow') audio.plop(ev.tier);
-    else if (ev.type === 'bomb') { audio.bomb(); view.shakeCamera(1.4); }
+    else if (ev.type === 'bomb') {
+      if (ev.blast) {
+        // TNT: fling everything nearby, a bigger shake, a ring of scraps.
+        physics.blast(pos.x, pos.z, ev.blast.radius, ev.blast.strength);
+        particles.burst(pos.x, pos.z, ev.blast.radius * 0.5, 0xc83a2e, 14, 2.4);
+        audio.tnt();
+        view.shakeCamera(2.4);
+      } else {
+        audio.bomb();
+        view.shakeCamera(ev.steps > 1 ? 2 : 1.4);
+      }
+    }
     else if (ev.type === 'lost') audio.lost();
   }
   // Countdown ticks under 10 s.

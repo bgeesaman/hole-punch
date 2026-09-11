@@ -1,4 +1,4 @@
-import { CATALOG, FRUIT_BY_TIER, CRATE_BY_TIER, footprintFor, pointsFor, clearanceRadius } from './catalog.js';
+import { CATALOG, FRUIT_BY_TIER, CRATE_BY_TIER, TIER_ORDER, HAZARD_FOR_CELL, tntForCell, footprintFor, pointsFor, clearanceRadius } from './catalog.js';
 import { accessiblePoints, thresholdsFrom } from './scoring.js';
 
 // Seeded layout generator. params (from level-curve) -> placed objects.
@@ -86,7 +86,6 @@ function buildTower(rng, tier, maxCount) {
 }
 
 const BUILDERS = { grid: buildGrid, pyramid: buildPyramid, tower: buildTower };
-const TIER_ORDER = ['S', 'M', 'L'];
 function capTier(tier, max) {
   return TIER_ORDER.indexOf(tier) > TIER_ORDER.indexOf(max) ? max : tier;
 }
@@ -137,15 +136,21 @@ export function generateLevel(params) {
     placedArrangements++;
   }
 
-  // Bombs replace grid cells of M or L tier (an S grid is too tight for a 0.5 bomb).
+  // Hazards replace grid cells. Each cell takes a hazard no bigger than the fruit it held:
+  // minis in small grids, bombs and TNT in medium and larger ones.
   const bombCount = Math.round(params.bombShare * objects.length);
   if (bombCount > 0) {
-    const candidates = objects.filter((o) => o.cell && CATALOG[o.type].tier !== 'S');
+    const mix = params.hazardMix || { bomb: 1 };
+    const candidates = objects.filter((o) => o.cell && footprintFor(o.type) >= 0.25);
     for (let i = 0; i < bombCount && candidates.length > 0; i++) {
       const idx = Math.floor(rng() * candidates.length);
       const o = candidates.splice(idx, 1)[0];
-      o.type = 'bomb';
-      o.position.y = CATALOG.bomb.restY;
+      const fp = footprintFor(o.type);
+      const fits = Object.fromEntries(Object.entries(mix).filter(([k, w]) => w > 0 && HAZARD_FOR_CELL[k](fp)));
+      if (Object.keys(fits).length === 0) { i--; continue; }
+      const kind = pickWeighted(rng, fits);
+      o.type = kind === 'tnt' ? tntForCell(fp) : kind;
+      o.position.y = CATALOG[o.type].restY;
     }
   }
   const fruit = objects.filter((o) => CATALOG[o.type].kind !== 'bomb');

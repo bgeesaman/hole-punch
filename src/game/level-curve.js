@@ -11,22 +11,26 @@ export function levelParams(n) {
   const t = Math.min(1, Math.max(0, (n - 1) / (LEVELS - 1)));
   const count = Math.round(lerp(30, 1000, Math.pow(t, 1.5)));
   const sL = n < 4 ? 0 : 0.32 * Math.sqrt(t);           // large fruit from level 4, rising fast
+  const sX = n < 40 ? 0 : 0.12 * Math.sqrt((n - 40) / 60); // XL from level 40: needs the last hole size
   const sM = lerp(0.2, 0.4, Math.sqrt(t));
-  const sS = Math.max(0.1, 1 - sL - sM);
-  const norm = sS + sM + sL;
+  const sS = Math.max(0.1, 1 - sL - sM - sX);
+  const norm = sS + sM + sL + sX;
   return {
     level: n,
     seed: n * 7919 + 17,
     count,                                   // scoreable objects (fruit + crates)
-    tierMix: { S: sS / norm, M: sM / norm, L: sL / norm },
-    bombShare: n >= 10 ? lerp(0.02, 0.04, t) : 0,
+    tierMix: { S: sS / norm, M: sM / norm, L: sL / norm, X: sX / norm },
+    bombShare: n >= 10 ? lerp(0.02, 0.07, t) : 0,
+    // Which hazards stand in for grid cells, by weight. Minis hide in small-fruit grids from
+    // level 15; TNT crates arrive at 25 and grow common.
+    hazardMix: { bomb: 1, bombS: n >= 15 ? 1 : 0, tnt: n >= 25 ? lerp(0.4, 1.2, t) : 0 },
     targetFraction: lerp(0.55, 0.9, Math.sqrt(t)),
     secondsPerObject: 1.0,
     side: Math.round(lerp(20, 64, t)),   // capped at 64: beyond that small fruit are a few pixels
     arrangements: Math.round(lerp(2, 20, t)),
     // Stacks use crates up to this tier. Large crates need the full-size hole and dominate the
     // points, which made early levels unwinnable.
-    maxStackTier: n < 6 ? 'S' : n < 15 ? 'M' : 'L',
+    maxStackTier: n < 6 ? 'S' : n < 15 ? 'M' : n < 60 ? 'L' : 'X',
     // Arrangement type weights; stacks arrive after the first few levels and grow common.
     weights: {
       grid: 1,

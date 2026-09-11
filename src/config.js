@@ -3,8 +3,8 @@ export const HOLE = {
   startRadius: 0.7,
   stepRadius: 0.35,
   minRadius: 0.7,
-  maxRadius: 2.1,
-  steps: 5,          // number of pips in the HUD
+  maxRadius: 2.45,
+  steps: 6,          // number of pips in the HUD; five growth milestones
   baseSpeed: 9,      // units per second at level start
   speedPerMilestone: 1.35, // added to max speed at each growth milestone
   smoothing: 12,     // exponential approach rate (higher = snappier)

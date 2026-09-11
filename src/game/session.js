@@ -16,7 +16,7 @@ export function createSession({ target, seconds, fruitCount, thresholds, accessi
     score: 0,
     milestones: 0,
     bombs: 0,          // bombs eaten (stats)
-    shrinks: [],       // active bomb penalties: expiry times on the session clock
+    shrinks: [],       // active bomb penalties: { until, steps, seconds } on the session clock
     clock: 0,
     fruitLeft: fruitCount,
     ended: false,
@@ -56,12 +56,12 @@ export function createSession({ target, seconds, fruitCount, thresholds, accessi
   }
 
   function activeShrinks() {
-    return s.shrinks.filter((t) => t > s.clock).length;
+    return s.shrinks.reduce((n, p) => n + (p.until > s.clock ? p.steps : 0), 0);
   }
   // Fraction (0..1) of the longest-running bomb penalty still to go; 0 when none is active.
   function bombRemaining() {
     let best = 0;
-    for (const t of s.shrinks) best = Math.max(best, (t - s.clock) / HOLE.bombShrinkSeconds);
+    for (const p of s.shrinks) best = Math.max(best, (p.until - s.clock) / p.seconds);
     return Math.min(1, best);
   }
 
@@ -71,8 +71,8 @@ export function createSession({ target, seconds, fruitCount, thresholds, accessi
     s.clock += dt;
     s.timeLeft = Math.max(0, s.timeLeft - dt);
     // Expire bomb penalties; the hole regrows.
-    s.shrinks = s.shrinks.filter((t) => t > s.clock);
-    if (s.shrinks.length < before) s.events.push({ type: 'regrow' });
+    s.shrinks = s.shrinks.filter((p) => p.until > s.clock);
+    if (activeShrinks() < before) s.events.push({ type: 'regrow' });
     if (s.timeLeft === 0) end('timeup');
   }
 
@@ -80,9 +80,10 @@ export function createSession({ target, seconds, fruitCount, thresholds, accessi
   function swallow(rec) {
     if (s.ended) return;
     if (rec.kind === 'bomb') {
+      const penalty = rec.penalty || { steps: 1, seconds: HOLE.bombShrinkSeconds };
       s.bombs++;
-      s.shrinks.push(s.clock + HOLE.bombShrinkSeconds);
-      s.events.push({ type: 'bomb' });
+      s.shrinks.push({ until: s.clock + penalty.seconds, steps: penalty.steps, seconds: penalty.seconds });
+      s.events.push({ type: 'bomb', steps: penalty.steps, blast: penalty.blast || null });
       return;
     }
     s.score += rec.points;

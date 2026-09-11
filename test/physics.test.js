@@ -237,3 +237,17 @@ describe('rolling brake does not disturb support', () => {
     for (const r of recs) expect(r.body.translation().y).toBeCloseTo(0.2, 2);
   });
 });
+
+describe('blast', () => {
+  it('flings nearby objects outward and leaves far ones alone', async () => {
+    const p = await createPhysics();
+    p.setSurface(30); p.setHoleRadius(0.7); p.setHolePosition(0, 0);
+    const near = p.spawn(ball(0.5, 2, 0, 0.5));
+    const far = p.spawn(ball(0.5, 9, 0, 0.5));
+    run(p, 0.5);
+    p.blast(0, 0, 4.5, 9);
+    run(p, 1);
+    expect(near.body.translation().x).toBeGreaterThan(3);
+    expect(far.body.translation().x).toBeCloseTo(9, 1);
+  });
+});
