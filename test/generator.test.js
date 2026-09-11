@@ -24,9 +24,9 @@ describe('level curve', () => {
     expect(levelParams(60).tierMix.X).toBeGreaterThan(0);
   });
 
-  it('hard mode adds 15% more explosives and keeps the same layout seed', () => {
+  it('hard mode has 25% more explosives than the curve, normal 10% fewer, same layout seed', () => {
     const n = levelParams(50), h = levelParams(50, 'hard');
-    expect(h.bombShare).toBeCloseTo(n.bombShare * 1.15);
+    expect(h.bombShare).toBeCloseTo(n.bombShare * (1.25 / 0.9));
     expect(h.seed).toBe(n.seed);
     expect(h.mode).toBe('hard');
   });

@@ -26,8 +26,8 @@ export const TNT = {
 
 // Difficulty modes. Hard shortens the TNT arming time and adds more explosives.
 export const DIFFICULTY = {
-  normal: { armSeconds: 2, hazardMul: 1 },
-  hard: { armSeconds: 1.25, hazardMul: 1.15 },
+  normal: { armSeconds: 2, hazardMul: 0.9 },
+  hard: { armSeconds: 1.25, hazardMul: 1.25 },
 };
 
 export const SCORING = {
