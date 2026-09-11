@@ -2,12 +2,17 @@ import { HOLE } from '../config.js';
 
 // Pure scoring rules. No DOM, no physics.
 
-// Fractions of the target score at which the hole grows one step, by default. Five growths
-// take the hole from the start size to the sixth and largest.
-export const MILESTONES = [0.2, 0.4, 0.6, 0.8, 1.0];
+// Fractions of the target score at which the hole grows one step. The first five take the
+// hole to its sixth size by 95% of the target; the last two are bonus sizes for scoring past
+// the target and are never lowered by the reachability cap.
+export const MILESTONES = [0.15, 0.35, 0.55, 0.75, 0.95, 1.2, 1.45];
+export const BONUS_FROM = 5; // index of the first bonus milestone
+
+// ceil after shaving float noise: 100 * 0.55 is 55.000000000000007, which must stay 55.
+const ceilShare = (target, f) => Math.ceil(target * f - 1e-9);
 
 export function defaultThresholds(target) {
-  return MILESTONES.map((f) => Math.ceil(target * f));
+  return MILESTONES.map((f) => ceilShare(target, f));
 }
 
 // Smallest hole step whose radius passes an object with the given clearance radius.
@@ -34,8 +39,8 @@ export function thresholdsFrom(target, accessible, share = THRESHOLD_SHARE) {
   const out = [];
   let prev = 0;
   for (let m = 0; m < MILESTONES.length; m++) {
-    const base = Math.ceil(target * MILESTONES[m]);
-    const cap = Math.floor(accessible[m] * share); // reachable at step m, before growing
+    const base = ceilShare(target, MILESTONES[m]);
+    const cap = m >= BONUS_FROM ? Infinity : Math.floor(accessible[m] * share); // reachable at step m, before growing
     let t = Math.min(base, cap);
     if (t < prev) t = prev;
     out.push(Math.max(0, t));
@@ -73,7 +78,7 @@ export function holeStep(milestones, bombs) {
 }
 
 export function holeRadius(step) {
-  return Math.min(HOLE.maxRadius, HOLE.startRadius + step * HOLE.stepRadius);
+  return HOLE.radii[Math.max(0, Math.min(HOLE.radii.length - 1, step))];
 }
 
 export function holeSpeed(milestones) {

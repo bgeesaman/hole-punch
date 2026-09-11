@@ -67,6 +67,8 @@ html, body {
   border: 2px solid var(--accent); display: inline-block;
 }
 .pips i.on { background: var(--accent); }
+.pips i.bonus { border-color: var(--gold); }
+.pips i.bonus.on { background: var(--gold); }
 /* Master mute indicator at the right of the HUD bar. */
 .hud-muted { margin-left: auto; font-size: 18px; line-height: 1; height: 24px; padding: 0 4px; opacity: 0.85; }
 .hud-muted:hover { opacity: 1; }

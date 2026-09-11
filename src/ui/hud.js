@@ -13,7 +13,9 @@ export function createHud() {
 
   const pips = [];
   for (let i = 0; i < HOLE.steps; i++) {
+    // Bonus sizes (past the target) get a gold pip.
     const p = document.createElement('i');
+    if (i >= HOLE.milestoneSteps) p.classList.add('bonus');
     el.hole.appendChild(p);
     pips.push(p);
   }

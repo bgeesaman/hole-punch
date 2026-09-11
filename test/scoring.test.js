@@ -4,51 +4,56 @@ import { createSession } from '../src/game/session.js';
 
 describe('scoring rules', () => {
   const T = defaultThresholds(100);
-  it('default milestones at 20/40/60/80/100% of target', () => {
-    expect(T).toEqual([20, 40, 60, 80, 100]);
+  it('milestones at 15/35/55/75/95% of target, then bonus sizes at 120 and 145%', () => {
+    expect(T).toEqual([15, 35, 55, 75, 95, 120, 145]);
     expect(milestonesReached(0, T)).toBe(0);
-    expect(milestonesReached(19, T)).toBe(0);
-    expect(milestonesReached(20, T)).toBe(1);
-    expect(milestonesReached(59, T)).toBe(2);
-    expect(milestonesReached(60, T)).toBe(3);
-    expect(milestonesReached(150, T)).toBe(5);
+    expect(milestonesReached(14, T)).toBe(0);
+    expect(milestonesReached(15, T)).toBe(1);
+    expect(milestonesReached(54, T)).toBe(2);
+    expect(milestonesReached(55, T)).toBe(3);
+    expect(milestonesReached(100, T)).toBe(5);
+    expect(milestonesReached(120, T)).toBe(6);
+    expect(milestonesReached(500, T)).toBe(7);
   });
   it('milestone progress runs 0..1 between thresholds and is full at the end', () => {
     expect(milestoneProgress(0, T)).toBe(0);
-    expect(milestoneProgress(10, T)).toBeCloseTo(0.5);
-    expect(milestoneProgress(20, T)).toBe(0);
-    expect(milestoneProgress(25, T)).toBeCloseTo(0.25);
-    expect(milestoneProgress(100, T)).toBe(1);
+    expect(milestoneProgress(7.5, T)).toBeCloseTo(0.5);
+    expect(milestoneProgress(15, T)).toBe(0);
+    expect(milestoneProgress(20, T)).toBeCloseTo(0.25);
+    expect(milestoneProgress(145, T)).toBe(1);
     expect(milestoneProgress(500, T)).toBe(1);
   });
   it('step to fit: balls need a hole wider than their radius, crates their face diagonal', () => {
     expect(stepToFit(0.25)).toBe(0);   // S ball
     expect(stepToFit(0.5)).toBe(0);    // M ball
-    expect(stepToFit(1.0)).toBe(1);    // L ball: 1.05
-    expect(stepToFit(0.707)).toBe(1);  // M crate
-    expect(stepToFit(1.414 * 1.25)).toBe(4); // L crate with margin: 2.1
-    expect(stepToFit(0.707 * 1.25)).toBe(1); // M crate with margin: 1.05
-    expect(stepToFit(1.3)).toBe(2);          // pumpkin
-    expect(stepToFit(1.3 * 1.414 * 1.25)).toBe(5); // X crate needs the sixth size: 2.45
-    expect(holeRadius(5)).toBeCloseTo(2.45);
+    expect(stepToFit(1.0)).toBe(1);    // L ball: 1.2
+    expect(stepToFit(0.707)).toBe(0);  // M crate face diagonal alone
+    expect(stepToFit(0.707 * 1.25)).toBe(1); // M crate with margin: 1.2
+    expect(stepToFit(1.3)).toBe(2);          // pumpkin: 1.6
+    expect(stepToFit(1.414 * 1.25)).toBe(3); // L crate with margin: 2.0
+    expect(stepToFit(1.3 * 1.414 * 1.25)).toBe(4); // X crate: 2.45
+    expect(holeRadius(4)).toBeCloseTo(2.45);
+    expect(holeRadius(7)).toBeCloseTo(3.5);
+    expect(holeRadius(99)).toBeCloseTo(3.5);
   });
   it('reachable thresholds cap each milestone at 70% of points collectable at that size', () => {
     // 10 small (1 pt) and 14 L crates (20 pts): target 60% of 290 = 174.
     const objs = [...Array(10).fill({ points: 1, clearance: 0.25 }), ...Array(14).fill({ points: 20, clearance: 1.77 })];
     const t = reachableThresholds(174, objs);
-    // Steps 0..3 only reach the 10 small points -> 7 each; step 4 fits the crates.
-    expect(t).toEqual([7, 7, 7, 7, 174]);
+    // Steps 0..2 only reach the 10 small points -> 7 each; step 3 fits the crates. Bonus
+    // milestones are never capped.
+    expect(t).toEqual([7, 7, 7, 131, 166, 209, 253]);
     // A level with nothing fitting at the start grows immediately.
     expect(reachableThresholds(100, [{ points: 20, clearance: 1.77 }])[0]).toBe(0);
     // A level of small fruit keeps the default fractions.
-    expect(reachableThresholds(100, Array(200).fill({ points: 1, clearance: 0.25 }))).toEqual([20, 40, 60, 80, 100]);
+    expect(reachableThresholds(100, Array(200).fill({ points: 1, clearance: 0.25 }))).toEqual([15, 35, 55, 75, 95, 120, 145]);
   });
   it('hole step never drops below start and never exceeds the top step', () => {
     expect(holeStep(0, 3)).toBe(0);
     expect(holeStep(2, 1)).toBe(1);
-    expect(holeStep(9, 0)).toBe(5);
-    expect(holeRadius(0)).toBeCloseTo(0.7);
-    expect(holeRadius(4)).toBeCloseTo(2.1);
+    expect(holeStep(9, 0)).toBe(7);
+    expect(holeRadius(0)).toBeCloseTo(0.8);
+    expect(holeRadius(3)).toBeCloseTo(2.0);
   });
   it('time bonus only when cleared', () => {
     expect(timeBonus(12.3, true)).toBe(123);
@@ -119,13 +124,13 @@ describe('session', () => {
 
   it('losing fruit off the edge lowers thresholds so growth stays reachable', () => {
     // 10 small points accessible at every step; thresholds capped at 7.
-    const accessible = [10, 10, 10, 10, 10, 10];
+    const accessible = [10, 10, 10, 10, 10, 10, 10, 10];
     const sess = createSession({ target: 100, seconds: 30, fruitCount: 10, thresholds: [7, 7, 7, 7, 7], accessible });
     sess.swallow({ kind: 'fruit', points: 5, tier: 'M' });
     expect(sess.holeStep).toBe(0);
     // 4 points roll off: only 6 remain collectable, so the cap drops to floor(6 * 0.7) = 4 <= 5.
     sess.lose({ kind: 'fruit', points: 4, clearance: 0.25 });
-    expect(sess.state.thresholds).toEqual([4, 4, 4, 4, 4]);
+    expect(sess.state.thresholds).toEqual([4, 4, 4, 4, 4, 120, 145]);
     expect(sess.holeStep).toBe(5);
   });
 

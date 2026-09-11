@@ -1,10 +1,15 @@
 // Shared constants. Keep tuning knobs here so milestones can adjust without hunting.
+// Hole sizes by step. The first six come from the level milestones; the last two are bonus
+// sizes for scoring past the target. Each size leaves room around the objects that arrive at
+// it: watermelon at 1.2, pumpkin at 1.6, large crate at 2.0, XL crate at 2.45 and roomy at 2.9.
+const RADII = [0.8, 1.2, 1.6, 2.0, 2.45, 2.9, 3.2, 3.5];
 export const HOLE = {
-  startRadius: 0.7,
-  stepRadius: 0.35,
-  minRadius: 0.7,
-  maxRadius: 2.45,
-  steps: 6,          // number of pips in the HUD; five growth milestones
+  radii: RADII,
+  startRadius: RADII[0],
+  minRadius: RADII[0],
+  maxRadius: RADII[RADII.length - 1],
+  steps: RADII.length,      // pips in the HUD
+  milestoneSteps: 6,        // sizes reached through the level milestones; the rest are bonus
   baseSpeed: 9,      // units per second at level start
   speedPerMilestone: 1.35, // added to max speed at each growth milestone
   smoothing: 12,     // exponential approach rate (higher = snappier)
