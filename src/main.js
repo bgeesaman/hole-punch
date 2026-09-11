@@ -20,7 +20,7 @@ import { levelParams, LEVELS } from './game/level-curve.js';
 import { generateLevel } from './game/generator.js';
 import { spawnDescriptor } from './game/catalog.js';
 import { visualFor, colorFor } from './render/fruit.js';
-import { HOLE, SURFACE, CAMERA, TNT } from './config.js';
+import { HOLE, SURFACE, CAMERA, TNT, DIFFICULTY } from './config.js';
 
 const canvas = document.getElementById('game');
 const view = createScene(canvas);
@@ -41,7 +41,7 @@ const endScreen = createEndScreen({
   onNext: () => startLevel(Math.min(LEVELS, level + 1)),
   onMenu: () => showMenu(),
 });
-const menu = createMenu({ save, onSelect: (n) => startLevel(n) });
+const menu = createMenu({ save, onSelect: (n) => startLevel(n), onMode: (m) => save.setMode(m) });
 const pause = createPause({
   onAudio: (channel, level) => {
     save.setAudio(channel, level);
@@ -130,7 +130,9 @@ function setIntro(phase) {
   if (phase === 'ready') audio.ready(); else audio.go();
 }
 const visuals = new Map(); // record id -> instanced visual handle
-const fuses = createFuses(TNT);
+let fuses = createFuses(TNT);
+const modeEl = document.getElementById('hud-mode');
+let mode = 'normal';
 const tntCandidates = [];
 const sparkLocal = new THREE.Matrix4();
 const sparkPos = new THREE.Vector3(), sparkPos2 = new THREE.Vector3(), sparkQuat = new THREE.Quaternion();
@@ -188,13 +190,15 @@ function startLevel(n = level) {
   endScreen.hide();
   hudEl.hidden = false;
   hintEl.hidden = false;
+  mode = save.data.mode || 'normal';
+  modeEl.hidden = mode !== 'hard';
   physics.clear();
-  fuses.clear();
+  fuses = createFuses({ ...TNT, armSeconds: DIFFICULTY[mode].armSeconds });
   objects.clear();
   particles.clear();
   visuals.clear();
   lastTick = -1;
-  current = generateLevel(levelParams(level));
+  current = generateLevel(levelParams(level, mode));
   side = current.side;
   view.fitSurface(side, { forceFollow: level >= CAMERA.followFromLevel });
   props.place(side, level);
@@ -231,8 +235,9 @@ function endLevel() {
   audio.duck(true);
   input.release();
   const st = session.state;
-  const r = save.recordResult(level, { total: st.total, stars: st.stars, won: st.won, perfect: st.perfect });
-  const note = st.won ? (r.newBest ? 'New best!' : '') : 'Reach the target to unlock the next level.';
+  const r = save.recordResult(level, { total: st.total, stars: st.stars, won: st.won, perfect: st.perfect, mode });
+  const tag = mode === 'hard' ? 'Hard mode' : '';
+  const note = st.won ? [tag, r.newBest ? 'New best!' : ''].filter(Boolean).join(' · ') : [tag, 'Reach the target to unlock the next level.'].filter(Boolean).join(' · ');
   endScreen.show(st, st.won && level < LEVELS, note);
 }
 
@@ -405,7 +410,7 @@ requestAnimationFrame(frame);
 if (debug) {
   window.holepunch = {
     get session() { return session; },
-    hole, physics, objects, input, view, audio, particles, fuses,
+    hole, physics, objects, input, view, audio, particles, get fuses() { return fuses; },
     setCursor(clientX, clientY) { input.setCursor(clientX, clientY); },
     setHoleStep(n) { session.state.milestones = n; session.state.bombs = 0; refreshHud(); },
     worldToClient,

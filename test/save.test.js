@@ -75,3 +75,17 @@ it('remembers a perfect run for a level even after a worse replay', () => {
   s.recordResult(3, { total: 20, stars: 2, won: true });
   expect(s.result(3).perfect).toBeUndefined();
 });
+
+it('keeps hard results beside normal ones and unlocks from either', () => {
+  const s = createSave(memStorage());
+  s.recordResult(1, { total: 30, stars: 2, won: true });
+  s.recordResult(1, { total: 45, stars: 3, won: true, perfect: true, mode: 'hard' });
+  expect(s.result(1)).toEqual({ best: 30, stars: 2, hard: { best: 45, stars: 3, perfect: true } });
+  s.recordResult(2, { total: 10, stars: 1, won: true, mode: 'hard' });
+  expect(s.result(2)).toEqual({ best: 0, stars: 0, hard: { best: 10, stars: 1 } });
+  expect(s.isUnlocked(3)).toBe(true);
+  s.recordResult(1, { total: 50, stars: 3, won: true });
+  expect(s.result(1).hard.best).toBe(45);
+  s.setMode('hard');
+  expect(s.data.mode).toBe('hard');
+});

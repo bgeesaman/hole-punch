@@ -24,6 +24,13 @@ describe('level curve', () => {
     expect(levelParams(60).tierMix.X).toBeGreaterThan(0);
   });
 
+  it('hard mode adds 15% more explosives and keeps the same layout seed', () => {
+    const n = levelParams(50), h = levelParams(50, 'hard');
+    expect(h.bombShare).toBeCloseTo(n.bombShare * 1.15);
+    expect(h.seed).toBe(n.seed);
+    expect(h.mode).toBe('hard');
+  });
+
   it('hazards arrive by level: bombs at 10, minis at 15, TNT at 25, all sized to their cell', () => {
     const types = (n) => new Set(generateLevel(levelParams(n)).objects.map((o) => o.type));
     expect([...types(10)].filter((t) => CATALOG[t].kind === 'bomb')).toEqual(['bomb']);

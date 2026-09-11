@@ -1,4 +1,6 @@
-// Level number (1..100) -> generation parameters. Pure.
+import { DIFFICULTY } from '../config.js';
+
+// Level number (1..100) and difficulty mode -> generation parameters. Pure.
 export const LEVELS = 100;
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -7,7 +9,8 @@ const lerp = (a, b, t) => a + (b - a) * t;
 // be eaten (target fraction), how much of it sits in large objects (which need hole growth
 // first) and in stacks (slower to harvest), how many objects there are, and how far apart
 // they are (table size). Early levels ramp these quickly so 10 -> 25 is a visible step.
-export function levelParams(n) {
+export function levelParams(n, mode = 'normal') {
+  const diff = DIFFICULTY[mode] || DIFFICULTY.normal;
   const t = Math.min(1, Math.max(0, (n - 1) / (LEVELS - 1)));
   const count = Math.round(lerp(30, 1000, Math.pow(t, 1.5)));
   const sL = n < 4 ? 0 : 0.32 * Math.sqrt(t);           // large fruit from level 4, rising fast
@@ -17,10 +20,11 @@ export function levelParams(n) {
   const norm = sS + sM + sL + sX;
   return {
     level: n,
+    mode,
     seed: n * 7919 + 17,
     count,                                   // scoreable objects (fruit + crates)
     tierMix: { S: sS / norm, M: sM / norm, L: sL / norm, X: sX / norm },
-    bombShare: n >= 10 ? lerp(0.02, 0.07, t) : 0,
+    bombShare: n >= 10 ? lerp(0.02, 0.07, t) * diff.hazardMul : 0,
     // Which hazards stand in for grid cells, by weight. Minis hide in small-fruit grids from
     // level 15; TNT crates arrive at 25 and grow common.
     hazardMix: { bomb: 1, bombS: n >= 15 ? 1 : 0, tnt: n >= 25 ? lerp(0.4, 1.2, t) : 0 },

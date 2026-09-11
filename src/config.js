@@ -24,6 +24,12 @@ export const TNT = {
   chain: 1.5,      // a detonation lights other sticks within this many zones of it
 };
 
+// Difficulty modes. Hard shortens the TNT arming time and adds more explosives.
+export const DIFFICULTY = {
+  normal: { armSeconds: 2, hazardMul: 1 },
+  hard: { armSeconds: 1.25, hazardMul: 1.15 },
+};
+
 export const SCORING = {
   perfectBonus: 0.25, // clearing the board with nothing lost off the edge adds this share of fruit points
 };
