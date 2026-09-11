@@ -372,6 +372,26 @@ function update(dt) {
       particles.spray(sparkPos.x, sparkPos.y, sparkPos.z, Math.random() < 0.5 ? 0xffd36a : 0xff8a2a, 1, 1.6);
     }
   }
+  const gameEvents = session.consume();
+  if (running || gameEvents.length) refreshHud();
+  for (const ev of gameEvents) {
+    if (ev.type === 'end') { endLevel(); if (s.won) audio.win(); else audio.lose(); }
+    else if (ev.type === 'milestone' || ev.type === 'regrow') { hole.flash(); audio.grow(); }
+    else if (ev.type === 'swallow') audio.plop(ev.tier);
+    else if (ev.type === 'bomb') {
+      if (ev.blast) {
+        // An unlit stick swallowed: it goes off in the hole.
+        physics.blast(pos.x, pos.z, ev.blast.radius, ev.blast.strength * DIFFICULTY[mode].blastMul);
+        particles.explode(pos.x, pos.z, ev.blast.radius);
+        audio.tnt();
+        view.shakeCamera(2.6);
+      } else {
+        audio.bomb();
+        view.shakeCamera(ev.steps > 1 ? 2 : 1.4);
+      }
+    }
+    else if (ev.type === 'lost') audio.lost();
+  }
   // Countdown ticks under 10 s.
   if (running && s.timeLeft < 10) {
     const whole = Math.ceil(s.timeLeft);
