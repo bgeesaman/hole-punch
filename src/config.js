@@ -14,21 +14,20 @@ export const HOLE = {
   darkDepth: 10,     // objects and walls fade to black over this many units below the table
 };
 
-// TNT fuses: a stick arms when the hole lingers within `reach` hole widths of it, then burns
-// `fuseSeconds` and blasts on its own. Swallowing a lit stick defuses it: shrink, no blast.
-export const TNT = {
-  armSeconds: 2,
-  coolSeconds: 2,
-  fuseSeconds: 7,
-  reach: 1,        // zone: hole widths from the hole's edge
-  chain: 1.5,      // a detonation lights other sticks within this many zones of it
-};
-
-// Difficulty modes. Hard shortens the TNT arming time, adds more explosives, and blasts at
-// full strength; normal blasts at three quarters.
+// Difficulty modes. TNT fuse timings are per mode: a stick arms after the hole lingers within
+// `reach` hole widths of its edge for `armSeconds`, cools over `coolSeconds` if the hole leaves
+// early, burns `fuseSeconds` once lit, and a detonation lights other sticks within `chain`
+// zones. Swallowing a lit stick defuses it: shrink, no blast. Hard also adds more explosives
+// and blasts at full strength; normal blasts at three quarters.
 export const DIFFICULTY = {
-  normal: { armSeconds: 2, hazardMul: 0.9, blastMul: 0.75, minHazards: 0 },
-  hard: { armSeconds: 1.25, hazardMul: 1.25, blastMul: 1, minHazards: 1 }, // every hard level has a bomb
+  normal: {
+    hazardMul: 0.9, blastMul: 0.75, minHazards: 0,
+    tnt: { armSeconds: 2, coolSeconds: 1.5, fuseSeconds: 8, reach: 1, chain: 1 },
+  },
+  hard: {
+    hazardMul: 1.25, blastMul: 1, minHazards: 1, // every hard level has a bomb
+    tnt: { armSeconds: 1.5, coolSeconds: 2, fuseSeconds: 5, reach: 1.2, chain: 1.5 },
+  },
 };
 
 export const SCORING = {

@@ -20,7 +20,7 @@ import { levelParams, LEVELS } from './game/level-curve.js';
 import { generateLevel } from './game/generator.js';
 import { spawnDescriptor } from './game/catalog.js';
 import { visualFor, colorFor } from './render/fruit.js';
-import { HOLE, SURFACE, CAMERA, TNT, DIFFICULTY } from './config.js';
+import { HOLE, SURFACE, CAMERA, DIFFICULTY } from './config.js';
 
 const canvas = document.getElementById('game');
 const view = createScene(canvas);
@@ -130,7 +130,8 @@ function setIntro(phase) {
   if (phase === 'ready') audio.ready(); else audio.go();
 }
 const visuals = new Map(); // record id -> instanced visual handle
-let fuses = createFuses(TNT);
+let tnt = DIFFICULTY.normal.tnt;
+let fuses = createFuses(tnt);
 const modeEl = document.getElementById('hud-mode');
 let mode = 'normal';
 const tntCandidates = [];
@@ -193,7 +194,8 @@ function startLevel(n = level) {
   mode = save.data.mode || 'normal';
   modeEl.hidden = mode !== 'hard';
   physics.clear();
-  fuses = createFuses({ ...TNT, armSeconds: DIFFICULTY[mode].armSeconds });
+  tnt = DIFFICULTY[mode].tnt;
+  fuses = createFuses(tnt);
   objects.clear();
   particles.clear();
   visuals.clear();
@@ -315,10 +317,10 @@ function update(dt) {
   for (const rec of events.lost) { session.lose(rec); fuses.forget(rec.id); despawn(rec); }
   for (const rec of events.removed) despawn(rec);
 
-  // TNT fuses: arm when the hole lingers within TNT.reach hole widths of a stick, burn, blow.
+  // TNT fuses: arm when the hole lingers within tnt.reach hole widths of a stick, burn, blow.
   if (running) {
     tntCandidates.length = 0;
-    const reach = hole.state.radius * (1 + 2 * TNT.reach);
+    const reach = hole.state.radius * (1 + 2 * tnt.reach);
     for (const rec of physics.records.values()) {
       if (rec.swallowed || !rec.penalty?.blast) continue;
       const d = Math.hypot(rec.px - pos.x, rec.pz - pos.z) - rec.size.r;
@@ -336,12 +338,12 @@ function update(dt) {
         view.shakeCamera(2.6);
         despawn(rec);
         physics.remove(rec);
-        // Chain: any other stick within TNT.chain zones of the blast lights up.
+        // Chain: any other stick within tnt.chain zones of the blast lights up.
         let chained = false;
         for (const other of physics.records.values()) {
           if (other === rec || other.swallowed || !other.penalty?.blast) continue;
           const d = Math.hypot(other.px - rec.px, other.pz - rec.pz) - other.size.r;
-          if (d <= reach * TNT.chain && fuses.light(other.id)) chained = true;
+          if (d <= reach * tnt.chain && fuses.light(other.id)) chained = true;
         }
         if (chained) audio.hiss();
       }
@@ -361,9 +363,9 @@ function update(dt) {
     const h = visuals.get(id);
     if (!h || !rec) continue;
     const left = fuses.fuseLeft(id);
-    const k = left / TNT.fuseSeconds; // 1 -> 0
+    const k = left / tnt.fuseSeconds; // 1 -> 0
     const period = 0.1 + 0.4 * k;
-    const on = ((TNT.fuseSeconds - left) % period) < period * 0.5;
+    const on = ((tnt.fuseSeconds - left) % period) < period * 0.5;
     objects.setPartColor(h, 0, on ? 0xffffff : 0xffb040);
     // Fuse geometry: base on the stick top, tip 0.153 out and 0.281 up (see fuseGeo).
     const hh = rec.size.hh;
