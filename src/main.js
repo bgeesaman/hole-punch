@@ -317,33 +317,38 @@ function update(dt) {
   for (const rec of events.lost) { session.lose(rec); fuses.forget(rec.id); despawn(rec); }
   for (const rec of events.removed) despawn(rec);
 
-  // TNT fuses: arm when the hole lingers within tnt.reach hole widths of a stick, burn, blow.
+  // Fuses. Sticks arm when the hole lingers within tnt.reach hole widths; bombs never arm on
+  // their own but are tracked so a detonation can set them off. A detonation lights sticks
+  // within tnt.chain zones with a full fuse and bombs within one zone after a short delay.
   if (running) {
     tntCandidates.length = 0;
     const reach = hole.state.radius * (1 + 2 * tnt.reach);
     for (const rec of physics.records.values()) {
-      if (rec.swallowed || !rec.penalty?.blast) continue;
-      const d = Math.hypot(rec.px - pos.x, rec.pz - pos.z) - rec.size.r;
-      tntCandidates.push({ id: rec.id, near: d <= reach });
+      if (rec.swallowed || rec.kind !== 'bomb') continue;
+      const d = Math.hypot(rec.px - pos.x, rec.pz - pos.z) - (rec.size.r ?? 0);
+      tntCandidates.push({ id: rec.id, near: !!rec.penalty?.blast && d <= reach });
     }
     for (const ev of fuses.update(dt, tntCandidates)) {
       const rec = physics.records.get(ev.id);
       if (!rec) continue;
-      if (ev.type === 'lit') audio.hiss();
+      if (ev.type === 'lit') { if (rec.penalty?.blast) audio.hiss(); }
       else if (ev.type === 'detonate') {
-        const b = rec.penalty.blast;
+        const stick = !!rec.penalty?.blast;
+        const b = stick ? rec.penalty.blast : rec.penalty.detonation;
         physics.blast(rec.px, rec.pz, b.radius, b.strength * DIFFICULTY[mode].blastMul);
-        particles.explode(rec.px, rec.pz, b.radius);
-        audio.tnt();
-        view.shakeCamera(2.6);
+        particles.explode(rec.px, rec.pz, b.radius, stick ? 1 : 0.45);
+        if (stick) audio.tnt(); else audio.bomb();
+        view.shakeCamera(stick ? 2.6 : 1.4);
         despawn(rec);
         physics.remove(rec);
-        // Chain: any other stick within tnt.chain zones of the blast lights up.
+        // Chain: sticks within tnt.chain zones light with a full fuse; bombs within one zone
+        // pop after tnt.bombDelay.
         let chained = false;
         for (const other of physics.records.values()) {
-          if (other === rec || other.swallowed || !other.penalty?.blast) continue;
-          const d = Math.hypot(other.px - rec.px, other.pz - rec.pz) - other.size.r;
-          if (d <= reach * tnt.chain && fuses.light(other.id)) chained = true;
+          if (other === rec || other.swallowed || other.kind !== 'bomb') continue;
+          const d = Math.hypot(other.px - rec.px, other.pz - rec.pz) - (other.size.r ?? 0);
+          if (other.penalty?.blast) { if (d <= reach * tnt.chain && fuses.light(other.id)) chained = true; }
+          else if (d <= reach) fuses.light(other.id, tnt.bombDelay);
         }
         if (chained) audio.hiss();
       }
@@ -363,6 +368,7 @@ function update(dt) {
     const h = visuals.get(id);
     if (!h || !rec) continue;
     const left = fuses.fuseLeft(id);
+    if (!rec.penalty?.blast) { objects.setPartColor(h, 0, 0xff7040); continue; } // a bomb about to pop
     const k = left / tnt.fuseSeconds; // 1 -> 0
     const period = 0.1 + 0.4 * k;
     const on = ((tnt.fuseSeconds - left) % period) < period * 0.5;

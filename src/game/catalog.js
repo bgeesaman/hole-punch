@@ -13,8 +13,10 @@ export const TIER_ORDER = ['S', 'M', 'L', 'X'];
 
 // Hazards: what swallowing one costs. steps: hole sizes lost; seconds: for how long;
 // blast: fruit within radius is flung outward with this impulse per unit mass.
-const BOMB = { steps: 1, seconds: 8 };
-const MINI = { steps: 1, seconds: 5 };
+// Bombs and minis have no blast when swallowed, but when set off by a nearby detonation
+// (`detonation`) they blast on their own, smaller than TNT.
+const BOMB = { steps: 1, seconds: 8, detonation: { radius: 2.5, strength: 5 } };
+const MINI = { steps: 1, seconds: 5, detonation: { radius: 1.6, strength: 3.5 } };
 const TNT_M = { steps: 2, seconds: 10, blast: { radius: 4.5, strength: 9 } };
 const TNT_L = { steps: 2, seconds: 10, blast: { radius: 6.5, strength: 12 } };
 

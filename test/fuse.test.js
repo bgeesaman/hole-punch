@@ -42,6 +42,11 @@ describe('creeper fuses', () => {
     f.update(1, [{ id: 5, near: false }]);
     expect(f.light(5)).toBe(false);
     expect(f.fuseLeft(5)).toBe(6);
+    // A bomb set off by a detonation pops after a short delay.
+    expect(f.light(9, 0.2)).toBe(true);
+    const out = [];
+    for (let i = 0; i < 15; i++) out.push(...f.update(1 / 60, [{ id: 5, near: false }, { id: 9, near: false }]));
+    expect(out.map((e) => e.id)).toEqual([9]);
   });
 
   it('a stick that leaves the board is forgotten', () => {

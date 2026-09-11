@@ -38,11 +38,12 @@ export function createFuses({ armSeconds, fuseSeconds, coolSeconds = 2 }) {
     return events;
   }
 
-  // Light a stick outright (a nearby detonation). Already-lit sticks keep their fuse.
-  function light(id) {
+  // Light outright (a nearby detonation), with an optional fuse length (bombs pop after a
+  // short delay). Already-lit ids keep their fuse.
+  function light(id, seconds = fuseSeconds) {
     if (lit.has(id)) return false;
     charge.delete(id);
-    lit.set(id, fuseSeconds);
+    lit.set(id, seconds);
     return true;
   }
   function forget(id) { charge.delete(id); lit.delete(id); }

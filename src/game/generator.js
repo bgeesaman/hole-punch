@@ -75,7 +75,7 @@ function buildPyramid(rng, tier, maxCount) {
 function buildTower(rng, tier, maxCount) {
   const crate = CRATE_BY_TIER[tier];
   const s = CATALOG[crate].size.hx * 2;
-  let h = randInt(rng, 3, 7);
+  let h = randInt(rng, 3, 5);
   while (h > 1 && h + 1 > maxCount) h--;
   if (h + 1 > maxCount) return null;
   const objects = [];

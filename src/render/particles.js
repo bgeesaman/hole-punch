@@ -70,8 +70,8 @@ export function createParticles(scene) {
   // swells and hangs around for a couple of seconds.
   const FIRE = [0xff4a2a, 0xff8a2a, 0xffc23a, 0xfff0a0, 0xc83a2e];
   const SMOKE = [0x5a5652, 0x6f6a65, 0x87827c, 0x9d9791];
-  function explode(x, z, radius) {
-    for (let k = 0; k < 46; k++) {
+  function explode(x, z, radius, intensity = 1) {
+    for (let k = 0; k < Math.round(46 * intensity); k++) {
       const a = Math.random() * Math.PI * 2;
       const r = radius * 0.25 * Math.random();
       const out = 4 + Math.random() * 7;
@@ -79,7 +79,7 @@ export function createParticles(scene) {
         Math.cos(a) * out, 4 + Math.random() * 8, Math.sin(a) * out,
         FIRE[Math.floor(Math.random() * FIRE.length)], 0.5 + Math.random() * 0.6, 1.2 + Math.random() * 1.6, 12);
     }
-    for (let k = 0; k < 26; k++) {
+    for (let k = 0; k < Math.round(26 * intensity); k++) {
       const a = Math.random() * Math.PI * 2;
       const r = radius * 0.35 * Math.random();
       const out = 0.6 + Math.random() * 1.6;
