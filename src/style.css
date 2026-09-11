@@ -159,10 +159,6 @@ html, body {
 .mode-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 12px; }
 .mode-row .label { font-size: 11px; letter-spacing: 0.15em; color: var(--ink-soft); }
 .mode-hint { font-size: 12px; color: var(--ink-soft); min-width: 0; }
-.level.hard { background: var(--crimson); border-color: #8e1622; color: #fff4ec; }
-.level.hard .s { color: #ffd27a; }
-.level.hard .b { color: #ffd9d3; }
-.level.hard:hover:not(:disabled) { background: #c92a38; }
 .menu-card { min-width: 520px; max-width: 92vw; }
 .title { font-size: 40px; margin-bottom: 2px; color: var(--accent); letter-spacing: 0.04em; }
 .subtitle { margin: 0 0 16px; color: var(--ink-soft); font-size: 14px; }
@@ -190,6 +186,11 @@ html, body {
   box-shadow: 0 0 0 1px var(--gold) inset, 0 0 0 3px #fff6d6 inset, 0 2px 0 rgba(0, 0, 0, 0.12);
 }
 .level.perfect .n { color: #8a6a05; }
+/* Hard clear: crimson card. Must follow .done and .perfect so it wins the background. */
+.level.hard { background: var(--crimson); border-color: #8e1622; color: #fff4ec; }
+.level.hard .s { color: #ffd27a; }
+.level.hard .b { color: #ffd9d3; }
+.level.hard:hover:not(:disabled) { background: #c92a38; }
 .level .n { font-weight: 700; font-size: 15px; }
 .level .s { font-size: 10px; color: var(--accent); letter-spacing: 1px; height: 12px; }
 .level .b { font-size: 10px; color: var(--ink-soft); height: 12px; }
