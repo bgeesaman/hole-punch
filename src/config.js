@@ -24,10 +24,11 @@ export const TNT = {
   chain: 1.5,      // a detonation lights other sticks within this many zones of it
 };
 
-// Difficulty modes. Hard shortens the TNT arming time and adds more explosives.
+// Difficulty modes. Hard shortens the TNT arming time, adds more explosives, and blasts at
+// full strength; normal blasts at three quarters.
 export const DIFFICULTY = {
-  normal: { armSeconds: 2, hazardMul: 0.9 },
-  hard: { armSeconds: 1.25, hazardMul: 1.25 },
+  normal: { armSeconds: 2, hazardMul: 0.9, blastMul: 0.75 },
+  hard: { armSeconds: 1.25, hazardMul: 1.25, blastMul: 1 },
 };
 
 export const SCORING = {

@@ -327,7 +327,7 @@ function update(dt) {
       if (ev.type === 'lit') audio.hiss();
       else if (ev.type === 'detonate') {
         const b = rec.penalty.blast;
-        physics.blast(rec.px, rec.pz, b.radius, b.strength);
+        physics.blast(rec.px, rec.pz, b.radius, b.strength * DIFFICULTY[mode].blastMul);
         particles.explode(rec.px, rec.pz, b.radius);
         audio.tnt();
         view.shakeCamera(2.6);
